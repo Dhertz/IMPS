@@ -31,7 +31,7 @@ int main(int argc, char **argv) {
 	FILE *in;
 	char *buffer;
 	int size;
-	const char *path = "..\\tests\\fact.bin";
+	const char *path = *(argv + 1);
 	
 	if ((in = fopen(path, "r")) == NULL) {
 		perror(path);
@@ -50,7 +50,7 @@ int main(int argc, char **argv) {
 	}
 	fclose(in);
 	
-	printf("%c", buffer[0]);
+	printf("%c", *(buffer+1));
 	
 	/*
 	struct state st;
