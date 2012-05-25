@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 struct state {
 	short *mem;
@@ -21,10 +22,54 @@ struct state init(struct state st) {
 
 uint32_t getOpCode(uint32_t inst) {
 	uint32_t res;
-	uint32_t mask = 31 << 26;
-	
+	uint32_t mask = 0xf8000000;
+	/* Hex number for opCode mask */
 	res = inst & mask;
 	return res >> 26;
+}
+
+uint32_t getR1(uint32_t inst) {
+	uint32_t res;
+	uint32_t mask = 0x7C00000;
+	/* Hex number for R1 mask */
+	res = inst & mask;
+	return res >> 20;
+}
+
+uint32_t getR2(uint32_t inst) {
+	uint32_t res;
+	uint32_t mask = 0x3E0000;
+	/* Hex number for R2 mask */
+	res = inst & mask;
+	return res >> 15;
+}
+
+uint32_t getR3(uint32_t inst) {
+	uint32_t res;
+	uint32_t mask = 0x1F000;
+	/* Hex number for R3 mask */
+	res = inst & mask;
+	return res >> 10;
+}
+
+uint32_t getIVal(uint32_t inst) {
+	uint32_t res;
+	uint32_t mask = 0x7FFF;
+	/* Hex number for Immediate value mask */
+	res = inst & mask;
+	return res;
+}
+
+uint32_t getAddress(uint32_t inst) {
+	uint32_t res;
+	uint32_t mask = 0x3FFFFFF;
+	/* Hex number for Address mask */
+	res = inst & mask;
+	return res;
+}
+
+void processInstruction(uint32_t opCode, uint32_t) {
+	
 }
 
 int main(int argc, char **argv) {
