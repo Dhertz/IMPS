@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 
 struct state {
 	short *mem;
@@ -21,10 +22,22 @@ struct state init(struct state st) {
 
 int main(int argc, char **argv) {
 	struct state st;
+	FILE *fp;
+
+	uint32_t x = 0;     /* really hacky, but defining just    */
+	uint32_t *ptr = &x; /* uint32_t *ptr didn't work - ideas? */
+
 	st = init(st);
+	
+	if ((fp = fopen(argv[1], "r")) == NULL) {
+		perror("fopen");
+		exit(EXIT_FAILURE);
+	}
 
-	printf("%i\n", st.mem[0]);
+	fread(ptr, 4 * sizeof(char), 1, fp);
+	printf("%i\n", *ptr);
 
+	fclose(fp);
 	free(st.mem);
  	return EXIT_SUCCESS;
 }
