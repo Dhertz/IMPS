@@ -2,13 +2,13 @@
 #include <stdio.h>
 #include <string.h>
 
-struct state {
+typedef struct state {
 	short *mem;
 	short pc;
 	int reg[32];
-};
+}state_t;
 
-struct state init(struct state st) {
+state_t init(state_t st) {
 	st.mem = calloc(4096, sizeof(short));
 
 	if (st.mem == NULL) {
@@ -20,7 +20,7 @@ struct state init(struct state st) {
 }
 
 int main(int argc, char **argv) {
-	struct state st;
+	state_t st;
 	st = init(st);
 
 	printf("%i\n", st.mem[0]);
