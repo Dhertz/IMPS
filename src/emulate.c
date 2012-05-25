@@ -23,19 +23,24 @@ struct state init(struct state st) {
 int main(int argc, char **argv) {
 	struct state st;
 	FILE *fp;
-	int i;
-	uint32_t *buffer = malloc(12 * 4);
+	int i, size;
+	uint32_t *buffer;
 
 	st = init(st);
-	
+
 	if ((fp = fopen(argv[1], "rb")) == NULL) {
 		perror("fopen");
 		exit(EXIT_FAILURE);
 	}
 
-	fread(buffer, 4, 12, fp);
+	fseek(fp, 0, SEEK_END);
+	size = ftell(fp) / 4;
+	fseek(fp, 0, SEEK_SET); /* size = number of 32-bit instructions in file */
 
-	for (i = 0; i < 12; i++) {
+	buffer = malloc(size * 4);
+	fread(buffer, 4, size, fp);
+
+	for (i = 0; i < size; i++) {
 		printf("%i\n", buffer[i]);
 	}
 
