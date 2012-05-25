@@ -19,12 +19,25 @@ struct state init(struct state st) {
 	return st;
 }
 
+uint32_t getOpCode(uint32_t inst) {
+	uint32_t res;
+	uint32_t mask = 15 << 27;
+	
+	res = inst & mask;
+	return res >> 27;
+}
+
 int main(int argc, char **argv) {
+	printf("%i\n", getOpCode(1164299827));
+	
+
+	/*
 	struct state st;
 	st = init(st);
 	
 	printf("%i\n", st.mem[0]);
 
 	free(st.mem);
+	*/
  	return EXIT_SUCCESS;
 }
