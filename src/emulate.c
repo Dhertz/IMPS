@@ -23,9 +23,8 @@ struct state init(struct state st) {
 int main(int argc, char **argv) {
 	struct state st;
 	FILE *fp;
-
-	uint32_t x = 0;     /* really hacky, but defining just    */
-	uint32_t *ptr = &x; /* uint32_t *ptr didn't work - ideas? */
+	int i;
+	uint32_t *buffer = malloc(12 * 4);
 
 	st = init(st);
 	
@@ -34,8 +33,11 @@ int main(int argc, char **argv) {
 		exit(EXIT_FAILURE);
 	}
 
-	fread(ptr, 4 * sizeof(char), 1, fp);
-	printf("%i\n", *ptr);
+	fread(buffer, 4, 12, fp);
+
+	for (i = 0; i < 12; i++) {
+		printf("%i\n", buffer[i]);
+	}
 
 	fclose(fp);
 	free(st.mem);
