@@ -19,6 +19,14 @@ state_t init(state_t st) {
 	return st;
 }
 
+uint32_t getOpCode(uint32_t inst) {
+	uint32_t res;
+	uint32_t mask = 31 << 26;
+
+	res = inst & mask;
+	return res >> 26;
+}
+
 int main(int argc, char **argv) {
 	state_t st;
 	st = init(st);
