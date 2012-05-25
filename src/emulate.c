@@ -21,16 +21,37 @@ struct state init(struct state st) {
 
 uint32_t getOpCode(uint32_t inst) {
 	uint32_t res;
-	uint32_t mask = 15 << 27;
+	uint32_t mask = 31 << 26;
 	
 	res = inst & mask;
-	return res >> 27;
+	return res >> 26;
 }
 
 int main(int argc, char **argv) {
-	printf("%i\n", getOpCode(1164299827));
+	FILE *in;
+	char *buffer;
+	int size;
+	const char *path = "..\\tests\\fact.bin";
 	
-
+	if ((in = fopen(path, "r")) == NULL) {
+		perror(path);
+		exit(EXIT_FAILURE);
+	}
+	
+	fseek(in, 0, SEEK_END);
+	size = ftell(in);
+	fseek(in, 0, SEEK_SET);
+	
+	buffer = malloc(size*sizeof(char));
+	
+	if(fgets(buffer, sizeof(buffer), in) == NULL) {
+		perror("file read failed");
+		exit(EXIT_FAILURE);
+	}
+	fclose(in);
+	
+	printf("%c", buffer[0]);
+	
 	/*
 	struct state st;
 	st = init(st);
@@ -39,5 +60,7 @@ int main(int argc, char **argv) {
 
 	free(st.mem);
 	*/
+	
+	free(buffer);
  	return EXIT_SUCCESS;
 }
