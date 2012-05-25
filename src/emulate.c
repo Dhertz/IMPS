@@ -29,7 +29,7 @@ int main(int argc, char **argv) {
 
 	st = init(st);
 	
-	if ((fp = fopen(argv[1], "r")) == NULL) {
+	if ((fp = fopen(argv[1], "rb")) == NULL) {
 		perror("fopen");
 		exit(EXIT_FAILURE);
 	}
