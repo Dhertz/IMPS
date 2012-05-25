@@ -3,11 +3,11 @@
 #include <string.h>
 #include <stdint.h>
 
-struct state {
+typedef struct state {
 	short *mem;
 	short pc;
 	int reg[32];
-};
+} state_t;
 
 struct state init(struct state st) {
 	st.mem = calloc(4096, sizeof(short));
@@ -68,8 +68,104 @@ uint32_t getAddress(uint32_t inst) {
 	return res;
 }
 
-void processInstruction(uint32_t opCode, uint32_t) {
-	
+void processInstruction(uint32_t opCode, uint32_t inst, state_t st) {
+	st.pc++;
+
+	switch (opCode) {
+		case 0:
+			fprintf(stderr, "Program Counter: %i\n", st.pc);
+			
+			for(int i = 0; i < 32; i++) {
+				fprintf(stderr, "Register %i: %i", i, st.reg[i]);
+			}
+			break;
+		
+		case 1:
+			st.reg[getR1(inst)] = st.reg[getR2(inst)] + st.reg[getR3(inst)];
+			break;
+			
+		case 2:
+			st.reg[getR1(inst)] = st.reg[getR2(inst)] + getIVal(inst);
+			break;
+			
+		case 3:
+			st.reg[getR1(inst)] = st.reg[getR2(inst)] - st.reg[getR3(inst)];
+			break;
+			
+		case 4:
+			st.reg[getR1(inst)] = st.reg[getR2(inst)] - getIVal(inst);
+			break;
+			
+		case 5:
+			st.reg[getR1(inst)] = st.reg[getR2(inst)] * st.reg[getR3(inst)];
+			break;
+			
+		case 6:
+			st.reg[getR1(inst)] = st.reg[getR2(inst)] * getIVal(inst);
+			break;
+			
+		case 7:
+			st.reg[getR1(inst)] = st.mem[getR2(inst) + getIVal(inst)];
+			break;
+			
+		case 8:
+			st.mem[getR2(inst) + getIVal(inst)] = st.reg[getR1(inst)];
+			break;
+			
+		case 9:
+			if (st.reg[getR1(inst)] == st.reg[getR2(inst)]) {
+				st.pc = st.pc + (getIVal(inst) * 4);
+			}
+			break;
+			
+		case 10:
+			if (st.reg[getR1(inst)] != st.reg[getR2(inst)]) {
+				st.pc = st.pc + (getIVal(inst) * 4);
+			}
+			break;
+			
+		case 11:
+			if (st.reg[getR1(inst)] < st.reg[getR2(inst)]) {
+				st.pc = st.pc + (getIVal(inst) * 4);
+			}
+			break;
+			
+		case 12:
+			if (st.reg[getR1(inst)] > st.reg[getR2(inst)]) {
+				st.pc = st.pc + (getIVal(inst) * 4);
+			}
+			break;
+			
+		case 13:
+			if (st.reg[getR1(inst)] <= st.reg[getR2(inst)]) {
+				st.pc = st.pc + (getIVal(inst) * 4);
+			}
+			break;
+			
+		case 14:
+			if (st.reg[getR1(inst)] >= st.reg[getR2(inst)]) {
+				st.pc = st.pc + (getIVal(inst) * 4);
+			}
+			break;
+		
+		case 15:
+			st.pc = getAddress(inst);
+			break;
+			
+		case 16:
+			st.pc = st.reg[getR1(inst)];
+			break;
+			
+		case 17:
+			st.reg[31] = st.pc + 4;
+			st.pc = getAddress(inst);
+			break;
+			
+		case 18:
+			printf("Register 1: %i", st.reg[getR1(inst)]);
+			break;
+		
+		}
 }
 
 int main(int argc, char **argv) {
