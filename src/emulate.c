@@ -10,6 +10,8 @@ typedef struct state {
 	int halt;
 } state_t;
 
+typedef uint32_t inst_t;
+
 state_t init(state_t st) {
 	int i;
 
@@ -31,41 +33,41 @@ state_t init(state_t st) {
 	return st;
 }
 
-uint8_t getOpCode(uint32_t inst) {
-	uint32_t mask = 0xfC000000;
+uint8_t getOpCode(inst_t inst) {
+	uint32_t mask = 0xFC000000;
 	/* Hex number for opCode mask */
 	uint32_t res = inst & mask;
 	return res >> 26;
 }
 
-uint8_t getR1(uint32_t inst) {
+uint8_t getR1(inst_t inst) {
 	uint32_t mask = 0x3E00000;
 	/* Hex number for R1 mask */
 	uint32_t res = inst & mask;
 	return res >> 21;
 }
 
-uint8_t getR2(uint32_t inst) {
+uint8_t getR2(inst_t inst) {
 	uint32_t mask = 0x1F0000;
 	/* Hex number for R2 mask */
 	uint32_t res = inst & mask;
 	return res >> 16;
 }
 
-uint8_t getR3(uint32_t inst) {
+uint8_t getR3(inst_t inst) {
 	uint32_t mask = 0x3E00;
 	/* Hex number for R3 mask */
 	uint32_t res = inst & mask;
 	return res >> 11;
 }
 
-uint16_t getIVal(uint32_t inst) {
+uint16_t getIVal(inst_t inst) {
 	uint32_t mask = 0xFFFF;
 	/* Hex number for Immediate value mask */
 	return inst & mask;
 }
 
-uint16_t getAddress(uint32_t inst) {
+uint16_t getAddress(inst_t inst) {
 	uint32_t mask = 0x3FFFFFF;
 	/* Hex number for Address mask */
 	return inst & mask;
@@ -75,11 +77,11 @@ int32_t signExtension(int16_t val) {
 	return (int32_t) val;
 }
 
-state_t executeInstruction(uint32_t inst, state_t st, FILE *fpres) {
+state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 	uint8_t opCode = getOpCode(inst);
 	st.pc++;
 
-	fprintf(stderr, "Incremented PC: %i\n", st.pc);
+	/* fprintf(stderr, "Incremented PC: %i\n", st.pc); */
 	fprintf(stderr, "Instruction: %i\n", inst);
 	fprintf(stderr, "Opcode: %i\n\n", opCode);
 
@@ -89,13 +91,13 @@ state_t executeInstruction(uint32_t inst, state_t st, FILE *fpres) {
 		switch (opCode) {
 			case 15:
 				/* jmp */
-				fprintf(stderr, "Setting PC to %i\n", addr);
+				/* fprintf(stderr, "Setting PC to %i\n", addr); */
 				st.pc = addr / 4;
 				break;
 			case 17:
 				/* jal */
-				st.reg[31] = st.pc + 1; /* instruction says +4, but buffer is addressable in */
-				st.pc = addr / 4;       /* 4-byte blocks, so +1 is fine                      */
+				st.reg[31] = st.pc + 1;
+				st.pc = addr / 4;
 				break;
 		}
 	} else if (opCode == 1 || opCode == 3 || opCode == 5 || opCode == 16 || opCode == 18) {
@@ -239,15 +241,19 @@ int main(int argc, char **argv) {
 	buffer = malloc(size * 4);
 	fread(buffer, 4, size, fp);
 
+	/*
 	for (int i = 0; i < size; i++) {
 		printf("buffer[%i] = %i\n", i, buffer[i]);
 	}
+	*/
 
 	while (st.halt == 0) {
 		st = executeInstruction(buffer[st.pc], st, fpres);
 	}
+
 	fclose(fpres);
 	fclose(fp);
 	free(st.mem);
+
  	return EXIT_SUCCESS;
 }
