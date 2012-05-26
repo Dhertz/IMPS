@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 typedef struct state {
-	uint8_t *mem;
+	int8_t *mem;
  	uint16_t pc;
-	uint32_t reg[32];
+	int32_t reg[32];
 	int halt;
 } state_t;
 
@@ -79,8 +79,9 @@ state_t executeInstruction(uint32_t inst, state_t st, FILE *fpres) {
 	uint8_t opCode = getOpCode(inst);
 	st.pc++;
 
-	/* fprintf(stderr, "Instruction: %i\n", inst);
-	fprintf(stderr, "Opcode: %i\n\n", opCode); */
+	fprintf(stderr, "Incremented PC: %i\n", st.pc);
+	fprintf(stderr, "Instruction: %i\n", inst);
+	fprintf(stderr, "Opcode: %i\n\n", opCode);
 
 	if (opCode == 15 || opCode == 17) {
 		/* J-type instructions */
@@ -88,12 +89,13 @@ state_t executeInstruction(uint32_t inst, state_t st, FILE *fpres) {
 		switch (opCode) {
 			case 15:
 				/* jmp */
-				st.pc = addr;
+				fprintf(stderr, "Setting PC to %i\n", addr);
+				st.pc = addr / 4;
 				break;
 			case 17:
 				/* jal */
 				st.reg[31] = st.pc + 1; /* instruction says +4, but buffer is addressable in */
-				st.pc = addr;           /* 4-byte blocks, so +1 is fine                      */
+				st.pc = addr / 4;       /* 4-byte blocks, so +1 is fine                      */
 				break;
 		}
 	} else if (opCode == 1 || opCode == 3 || opCode == 5 || opCode == 16 || opCode == 18) {
@@ -116,7 +118,7 @@ state_t executeInstruction(uint32_t inst, state_t st, FILE *fpres) {
 				break;
 			case 16:
 				/* jr */
-				st.pc = st.reg[r1];
+				st.pc = st.reg[r1] / 4;
 				break;
 			case 18:
 				/* out */
@@ -135,7 +137,7 @@ state_t executeInstruction(uint32_t inst, state_t st, FILE *fpres) {
 			/* I-type instructions */
 			uint8_t r1 = getR1(inst);
 			uint8_t r2 = getR2(inst);
-			uint16_t val = getIVal(inst);
+			int32_t val = signExtension(getIVal(inst));
 			
 			/* fprintf(stderr, "Instruction: %i\n", inst);
 			fprintf(stderr, "Opcode: %i\n", opCode);
@@ -236,6 +238,10 @@ int main(int argc, char **argv) {
 
 	buffer = malloc(size * 4);
 	fread(buffer, 4, size, fp);
+
+	for (int i = 0; i < size; i++) {
+		printf("buffer[%i] = %i\n", i, buffer[i]);
+	}
 
 	while (st.halt == 0) {
 		st = executeInstruction(buffer[st.pc], st, fpres);
