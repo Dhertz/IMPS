@@ -9,7 +9,7 @@ typedef struct state {
 	int reg[32];
 } state_t;
 
-struct state init(struct state st) {
+state_t init(state_t st) {
 	st.mem = calloc(4096, sizeof(short));
 
 	if (st.mem == NULL) {
@@ -181,7 +181,7 @@ void processInstruction(uint32_t opCode, uint32_t inst, state_t st) {
 }
 
 int main(int argc, char **argv) {
-	struct state st;
+	state_t st;
 	FILE *fp;
 	int i, size;
 	uint32_t *buffer;
