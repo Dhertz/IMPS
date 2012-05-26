@@ -4,13 +4,13 @@
 #include <stdint.h>
 
 typedef struct state {
-	short *mem;
-	short pc;
-	int reg[32];
+	uint8_t *mem;
+ 	uint16_t pc;
+	uint32_t reg[32];
 } state_t;
 
 state_t init(state_t st) {
-	st.mem = calloc(4096, sizeof(short));
+	st.mem = calloc(65536, 1);
 
 	if (st.mem == NULL) {
 		perror("malloc");
