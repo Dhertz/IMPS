@@ -82,8 +82,8 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 	st.pc++;
 
 	/* fprintf(stderr, "Incremented PC: %i\n", st.pc); */
-	fprintf(stderr, "Instruction: %i\n", inst);
-	fprintf(stderr, "Opcode: %i\n\n", opCode);
+	/* fprintf(stderr, "Instruction: %i\n", inst);
+	fprintf(stderr, "Opcode: %i\n\n", opCode); */
 
 	if (opCode == 15 || opCode == 17) {
 		/* J-type instructions */
