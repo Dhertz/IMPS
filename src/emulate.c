@@ -120,7 +120,7 @@ state_t executeInstruction(uint32_t inst, state_t st, FILE *fpres) {
 				break;
 			case 18:
 				/* out */
-				fwrite(&st.reg[r1], 4, 1, fpres); /* stdout eventually, but this is easier for testing */
+				fwrite(&st.reg[r1], 1, 1, fpres); /* stdout eventually, but this is easier for testing */
 				break;
 		}
 	} else {
