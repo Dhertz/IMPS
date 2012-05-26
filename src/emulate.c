@@ -28,28 +28,28 @@ uint32_t getOpCode(uint32_t inst) {
 }
 
 uint32_t getR1(uint32_t inst) {
-	uint32_t mask = 0x7C00000;
+	uint32_t mask = 0x3E00000;
 	/* Hex number for R1 mask */
 	uint32_t res = inst & mask;
 	return res >> 20;
 }
 
 uint32_t getR2(uint32_t inst) {
-	uint32_t mask = 0x3E0000;
+	uint32_t mask = 0x1F0000;
 	/* Hex number for R2 mask */
 	uint32_t res = inst & mask;
 	return res >> 15;
 }
 
 uint32_t getR3(uint32_t inst) {
-	uint32_t mask = 0x1F000;
+	uint32_t mask = 0x3E00;
 	/* Hex number for R3 mask */
 	uint32_t res = inst & mask;
 	return res >> 10;
 }
 
 uint32_t getIVal(uint32_t inst) {
-	uint32_t mask = 0x7FFF;
+	uint32_t mask = 0xFFFF;
 	/* Hex number for Immediate value mask */
 	return inst & mask;
 }
@@ -58,6 +58,10 @@ uint32_t getAddress(uint32_t inst) {
 	uint32_t mask = 0x3FFFFFF;
 	/* Hex number for Address mask */
 	return inst & mask;
+}
+
+int32_t signExtension(int16_t val) {
+	return (int32_t)val;
 }
 
 void processInstruction(uint32_t opCode, uint32_t inst, state_t st) {
@@ -181,6 +185,13 @@ void processInstruction(uint32_t opCode, uint32_t inst, state_t st) {
 }
 
 int main(int argc, char **argv) {
+
+	int16_t x = 0x8001;
+	printf("%i\n", x);
+	int32_t y = signExtension(x);
+	printf("%i\n", y);
+
+/*
 	struct state st;
 	FILE *fp;
 	int i, size;
@@ -195,7 +206,7 @@ int main(int argc, char **argv) {
 
 	fseek(fp, 0, SEEK_END);
 	size = ftell(fp) / 4;
-	fseek(fp, 0, SEEK_SET); /* size = number of 32-bit instructions in file */
+	fseek(fp, 0, SEEK_SET);  size = number of 32-bit instructions in file 
 
 	buffer = malloc(size * 4);
 	fread(buffer, 4, size, fp);
@@ -207,4 +218,6 @@ int main(int argc, char **argv) {
 	fclose(fp);
 	free(st.mem);
  	return EXIT_SUCCESS;
+*/
+
 }
