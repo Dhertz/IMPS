@@ -7,9 +7,12 @@ typedef struct state {
 	uint8_t *mem;
  	uint16_t pc;
 	uint32_t reg[32];
+	int halt;
 } state_t;
 
 state_t init(state_t st) {
+	int i;
+
 	st.mem = calloc(65536, 1);
 
 	if (st.mem == NULL) {
@@ -17,11 +20,19 @@ state_t init(state_t st) {
 		exit(EXIT_FAILURE);
 	}
 
+	st.pc = 0;
+	
+	for (i = 0; i < 32; i ++) {
+		st.reg[i] = 0;
+	}
+
+	st.halt = 0;
+
 	return st;
 }
 
 uint8_t getOpCode(uint32_t inst) {
-	uint32_t mask = 0xf8000000;
+	uint32_t mask = 0xfC000000;
 	/* Hex number for opCode mask */
 	uint32_t res = inst & mask;
 	return res >> 26;
@@ -31,21 +42,21 @@ uint8_t getR1(uint32_t inst) {
 	uint32_t mask = 0x3E00000;
 	/* Hex number for R1 mask */
 	uint32_t res = inst & mask;
-	return res >> 20;
+	return res >> 21;
 }
 
 uint8_t getR2(uint32_t inst) {
 	uint32_t mask = 0x1F0000;
 	/* Hex number for R2 mask */
 	uint32_t res = inst & mask;
-	return res >> 15;
+	return res >> 16;
 }
 
 uint8_t getR3(uint32_t inst) {
 	uint32_t mask = 0x3E00;
 	/* Hex number for R3 mask */
 	uint32_t res = inst & mask;
-	return res >> 10;
+	return res >> 11;
 }
 
 uint16_t getIVal(uint32_t inst) {
@@ -61,12 +72,15 @@ uint16_t getAddress(uint32_t inst) {
 }
 
 int32_t signExtension(int16_t val) {
-	return (int32_t)val;
+	return (int32_t) val;
 }
 
-state_t executeInstruction(uint32_t inst, state_t st) {
+state_t executeInstruction(uint32_t inst, state_t st, FILE *fpres) {
 	uint8_t opCode = getOpCode(inst);
 	st.pc++;
+
+	/* fprintf(stderr, "Instruction: %i\n", inst);
+	fprintf(stderr, "Opcode: %i\n\n", opCode); */
 
 	if (opCode == 15 || opCode == 17) {
 		/* J-type instructions */
@@ -106,7 +120,7 @@ state_t executeInstruction(uint32_t inst, state_t st) {
 				break;
 			case 18:
 				/* out */
-				printf("%i", st.reg[r1]); /* needs to stdout in binary mode */
+				fwrite(&st.reg[r1], 4, 1, fpres); /* stdout eventually, but this is easier for testing */
 				break;
 		}
 	} else {
@@ -114,13 +128,21 @@ state_t executeInstruction(uint32_t inst, state_t st) {
 			/* Halt */
 			fprintf(stderr, "PC: %i\n\n", st.pc);
 			for(int i = 0; i < 32; i++) {
-				fprintf(stderr, "R%i: %i", i, st.reg[i]);
+				fprintf(stderr, "R%i: %i\n", i, st.reg[i]);
 			}
+			st.halt = 1;
 		} else if (opCode <= 18) {
 			/* I-type instructions */
 			uint8_t r1 = getR1(inst);
 			uint8_t r2 = getR2(inst);
 			uint16_t val = getIVal(inst);
+			
+			/* fprintf(stderr, "Instruction: %i\n", inst);
+			fprintf(stderr, "Opcode: %i\n", opCode);
+			fprintf(stderr, "R1: %i\n", r1);
+			fprintf(stderr, "R2: %i\n", r2);
+			fprintf(stderr, "C: %i\n\n", val); */
+
 			switch (opCode) {
 				case 2:
 					/* addi */
@@ -179,11 +201,11 @@ state_t executeInstruction(uint32_t inst, state_t st) {
 					}
 					break;
 				default:
-					/* Invalid opCode */
+					fprintf(stderr, "Invalid opcode");
 					break;
 			}
 		} else {
-			/* Invalid opCode */
+			fprintf(stderr, "Invalid opcode");
 		}
 	}
 	
@@ -192,13 +214,18 @@ state_t executeInstruction(uint32_t inst, state_t st) {
 
 int main(int argc, char **argv) {
 	state_t st;
-	FILE *fp;
-	int i, size;
+	FILE *fp, *fpres;
+	int size;
 	uint32_t *buffer;
 
 	st = init(st);
 
 	if ((fp = fopen(argv[1], "rb")) == NULL) {
+		perror("fopen");
+		exit(EXIT_FAILURE);
+	}
+
+	if ((fpres = fopen(argv[2], "wb")) == NULL) {
 		perror("fopen");
 		exit(EXIT_FAILURE);
 	}
@@ -210,12 +237,11 @@ int main(int argc, char **argv) {
 	buffer = malloc(size * 4);
 	fread(buffer, 4, size, fp);
 
-	for (i = 0; i < size; i++) {
-		printf("%i\n", buffer[i]);
+	while (st.halt == 0) {
+		st = executeInstruction(buffer[st.pc], st, fpres);
 	}
-
+	fclose(fpres);
 	fclose(fp);
 	free(st.mem);
  	return EXIT_SUCCESS;
-
 }
