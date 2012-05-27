@@ -79,11 +79,11 @@ int32_t signExtension(int16_t val) {
 
 state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 	uint8_t opCode = getOpCode(inst);
-	st.pc++;
+	st.pc += 4;
 
 	/* fprintf(stderr, "Incremented PC: %i\n", st.pc); */
-	/* fprintf(stderr, "Instruction: %i\n", inst);
-	fprintf(stderr, "Opcode: %i\n\n", opCode); */
+	fprintf(stderr, "Instruction: %i\n", inst);
+	fprintf(stderr, "Opcode: %i\n\n", opCode);
 
 	if (opCode == 15 || opCode == 17) {
 		/* J-type instructions */
@@ -92,12 +92,12 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 			case 15:
 				/* jmp */
 				/* fprintf(stderr, "Setting PC to %i\n", addr); */
-				st.pc = addr / 4;
+				st.pc = addr;
 				break;
 			case 17:
 				/* jal */
 				st.reg[31] = st.pc + 1;
-				st.pc = addr / 4;
+				st.pc = addr;
 				break;
 		}
 	} else if (opCode == 1 || opCode == 3 || opCode == 5 || opCode == 16 || opCode == 18) {
@@ -120,7 +120,7 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 				break;
 			case 16:
 				/* jr */
-				st.pc = st.reg[r1] / 4;
+				st.pc = st.reg[r1];
 				break;
 			case 18:
 				/* out */
@@ -171,37 +171,37 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 				case 9:
 					/* beq */
 					if (st.reg[r1] == st.reg[r2]) {
-						st.pc = st.pc + val;
+						st.pc = st.pc + (val * 4);
 					}
 					break;
 				case 10:
 					/* bne */
 					if (st.reg[r1] != st.reg[r2]) {
-						st.pc = st.pc + val;
+						st.pc = st.pc + (val * 4);
 					}
 					break;
 				case 11:
 					/* blt */
 					if (st.reg[r1] < st.reg[r2]) {
-						st.pc = st.pc + val;
+						st.pc = st.pc + (val * 4);
 					}
 					break;
 				case 12:
 					/* bgt */
 					if (st.reg[r1] > st.reg[r2]) {
-						st.pc = st.pc + val;
+						st.pc = st.pc + (val * 4);
 					}
 					break;
 				case 13:
 					/* ble */
 					if (st.reg[r1] <= st.reg[r2]) {
-						st.pc = st.pc + val;
+						st.pc = st.pc + (val * 4);
 					}
 					break;
 				case 14:
 					/* bge */
 					if (st.reg[r1] >= st.reg[r2]) {
-						st.pc = st.pc + val;
+						st.pc = st.pc + (val * 4);
 					}
 					break;
 				default:
@@ -216,11 +216,22 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 	return st;
 }
 
+uint32_t readUint32(int addr, state_t st) {
+	uint32_t res = 0;
+	int i;
+
+	for (i = 0; i < 4; i++) {
+		res |= st.mem[addr + i] << (8 * i);
+	}
+
+	return res;
+}
+
 int main(int argc, char **argv) {
 	state_t st;
 	FILE *fp, *fpres;
 	int size;
-	uint32_t *buffer;
+	/* uint32_t *buffer; */
 
 	st = init(st);
 
@@ -238,17 +249,17 @@ int main(int argc, char **argv) {
 	size = ftell(fp) / 4;
 	fseek(fp, 0, SEEK_SET);  /* size = number of 32-bit instructions in file */
 
-	buffer = malloc(size * 4);
-	fread(buffer, 4, size, fp);
+	/* buffer = malloc(size * 4);
+	fread(buffer, 4, size, fp); */
+	fread(st.mem, 4, size, fp);
 
-	/*
-	for (int i = 0; i < size; i++) {
-		printf("buffer[%i] = %i\n", i, buffer[i]);
-	}
-	*/
+	for (int i = 0; i < 400; i += 4)
+		printf("st.mem[%i] = %i\n", i, readUint32(i, st));
+	
 
 	while (st.halt == 0) {
-		st = executeInstruction(buffer[st.pc], st, fpres);
+		/* st = executeInstruction(buffer[st.pc], st, fpres); */
+		st = executeInstruction(readUint32(st.pc, st), st, fpres);
 	}
 
 	fclose(fpres);
