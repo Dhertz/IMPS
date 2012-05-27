@@ -13,7 +13,8 @@ typedef struct state {
 typedef uint32_t inst_t;
 
 state_t init(state_t st) {
-	int i;
+	/*int i;*/
+
 
 	st.mem = calloc(65536, 1);
 
@@ -24,9 +25,9 @@ state_t init(state_t st) {
 
 	st.pc = 0;
 	
-	for (i = 0; i < 32; i ++) {
+		/*for (i = 0; i < 32; i ++) {
 		st.reg[i] = 0;
-	}
+	}Initialised more neatly in main*/
 
 	st.halt = 0;
 
@@ -148,6 +149,7 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 			fprintf(stderr, "C: %i\n\n", val); */
 
 			switch (opCode) {
+				/*I type instructions*/
 				case 2:
 					/* addi */
 					st.reg[r1] = st.reg[r2] + val;
@@ -217,19 +219,15 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 }
 
 int main(int argc, char **argv) {
-	state_t st;
+	state_t st = {.reg = {0}};
 	FILE *fp, *fpres;
 	int size;
 	uint32_t *buffer;
 
 	st = init(st);
 
-	if ((fp = fopen(argv[1], "rb")) == NULL) {
-		perror("fopen");
-		exit(EXIT_FAILURE);
-	}
-
-	if ((fpres = fopen(argv[2], "wb")) == NULL) {
+	if ((fp = fopen(argv[1], "rb")) == NULL 
+			|| (fpres = fopen(argv[2], "wb")) == NULL) {
 		perror("fopen");
 		exit(EXIT_FAILURE);
 	}
