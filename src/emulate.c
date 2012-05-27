@@ -13,16 +13,14 @@ typedef struct state {
 typedef uint32_t inst_t;
 
 state_t init() {
-	state_t st = {.reg = {0}};
+	state_t st = {.pc = 0, .halt = 0, .reg = {0}};
+	
 	st.mem = calloc(65536, 1);
 
 	if (st.mem == NULL) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
-
-	st.pc = 0;
-	st.halt = 0;
 
 	return st;
 }
