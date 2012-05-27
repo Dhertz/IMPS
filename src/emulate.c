@@ -12,10 +12,8 @@ typedef struct state {
 
 typedef uint32_t inst_t;
 
-state_t init(state_t st) {
-	/*int i;*/
-
-
+state_t init() {
+	state_t st = {.reg = {0}};
 	st.mem = calloc(65536, 1);
 
 	if (st.mem == NULL) {
@@ -24,11 +22,6 @@ state_t init(state_t st) {
 	}
 
 	st.pc = 0;
-	
-		/*for (i = 0; i < 32; i ++) {
-		st.reg[i] = 0;
-	}Initialised more neatly in main*/
-
 	st.halt = 0;
 
 	return st;
@@ -219,12 +212,11 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 }
 
 int main(int argc, char **argv) {
-	state_t st = {.reg = {0}};
 	FILE *fp, *fpres;
 	int size;
 	uint32_t *buffer;
 
-	st = init(st);
+	state_t st = init();
 
 	if ((fp = fopen(argv[1], "rb")) == NULL 
 			|| (fpres = fopen(argv[2], "wb")) == NULL) {
