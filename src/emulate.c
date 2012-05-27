@@ -95,7 +95,7 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 				break;
 			case 17:
 				/* jal */
-				st.reg[31] = st.pc + 1;
+				st.reg[31] = st.pc;
 				st.pc = addr;
 				break;
 		}
