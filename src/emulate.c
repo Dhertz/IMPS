@@ -12,23 +12,15 @@ typedef struct state {
 
 typedef uint32_t inst_t;
 
-state_t init(state_t st) {
-	int i;
-
+state_t init(void) {
+	state_t st = {.pc = 0, .halt = 0, .reg = {0}};
+	
 	st.mem = calloc(65536, 1);
 
 	if (st.mem == NULL) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
-
-	st.pc = 0;
-	
-	for (i = 0; i < 32; i ++) {
-		st.reg[i] = 0;
-	}
-
-	st.halt = 0;
 
 	return st;
 }
@@ -95,7 +87,7 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 				break;
 			case 17:
 				/* jal */
-				st.reg[31] = st.pc + 1;
+				st.reg[31] = st.pc;
 				st.pc = addr;
 				break;
 		}
@@ -227,18 +219,13 @@ inst_t readUint32(int addr, state_t st) {
 }
 
 int main(int argc, char **argv) {
-	state_t st;
 	FILE *fp, *fpres;
 	int size;
 
-	st = init(st);
+	state_t st = init();
 
-	if ((fp = fopen(argv[1], "rb")) == NULL) {
-		perror("fopen");
-		exit(EXIT_FAILURE);
-	}
-
-	if ((fpres = fopen(argv[2], "wb")) == NULL) {
+	if ((fp = fopen(argv[1], "rb")) == NULL 
+			|| (fpres = fopen(argv[2], "wb")) == NULL) {
 		perror("fopen");
 		exit(EXIT_FAILURE);
 	}
