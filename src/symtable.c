@@ -25,15 +25,19 @@ void init(table *t) {
 	t->foot->prev = t->head;
 }
 
-static iterator start(table *t) {
+iterator start(table *t) {
 	return t->head->next;
 }
 
-static iterator next(iterator i) {
+iterator end(table *t) {
+	return t->foot;
+}
+
+iterator next(iterator i) {
 	return i->next;
 }
 
-static char *getKey(iterator i) {
+char *getKey(iterator i) {
 	return i->key;
 }
 

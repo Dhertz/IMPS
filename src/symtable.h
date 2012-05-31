@@ -16,6 +16,10 @@ typedef struct table {
 typedef node_t *iterator;
 
 void init(table *t);
+iterator start(table *t);
+iterator end(table *t);
+iterator next(iterator i);
+char *getKey(iterator i);
 void insertFront(table *t, char *k, int v);
 int get(table *t, char *k);
 void freeTable(table *t);
