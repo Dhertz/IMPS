@@ -5,7 +5,7 @@ CFLAGS  = -Wall -pedantic -std=c99
 .PHONY: all clean
 
 #make all
-all: assemble symtable emulate
+all: assemble emulate
 
 #build executables
 emulate: emulate.o
