@@ -61,13 +61,9 @@ int32_t signExtension(int16_t val) {
 	return (int32_t) val;
 }
 
-state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
+state_t executeInstruction(inst_t inst, state_t st) {
 	uint8_t opCode = getOpCode(inst);
 	st.pc += 4;
-    
-	/* fprintf(stderr, "Incremented PC: %i\n", st.pc); */
-	/* fprintf(stderr, "Instruction: %i\n", inst);
-     fprintf(stderr, "Opcode: %i\n\n", opCode); */
     
 	if (opCode == 15 || opCode == 17) {
 		/* J-type instructions */
@@ -107,7 +103,7 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 				break;
 			case 18:
 				/* out */
-				fwrite(&st.reg[r1], 1, 1, fpres); /* stdout eventually, but this is easier for testing */
+				fprintf(stdout, "%c", st.reg[r1]);
 				break;
 		}
 	} else {
@@ -124,12 +120,6 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 			uint8_t r2 = getR2(inst);
 			int32_t val = signExtension(getIVal(inst));
 			
-			/* fprintf(stderr, "Instruction: %i\n", inst);
-             fprintf(stderr, "Opcode: %i\n", opCode);
-             fprintf(stderr, "R1: %i\n", r1);
-             fprintf(stderr, "R2: %i\n", r2);
-             fprintf(stderr, "C: %i\n\n", val); */
-            
 			switch (opCode) {
 				case 2:
 					/* addi */
@@ -212,13 +202,12 @@ inst_t readUint32(int addr, state_t st) {
 
 
 int main(int argc, char **argv) {
-	FILE *fp, *fpres;
+	FILE *fp;
 	long size;
 
 	state_t st = init();
 
-	if ((fp = fopen(argv[1], "rb")) == NULL 
-			|| (fpres = fopen(argv[2], "wb")) == NULL) {
+	if ((fp = fopen(argv[1], "rb")) == NULL) {
 		perror("fopen");
 		exit(EXIT_FAILURE);
 	}
@@ -230,10 +219,9 @@ int main(int argc, char **argv) {
 	fread(st.mem, 4, size, fp);
 
 	while (st.halt == 0) {
-		st = executeInstruction(readUint32(st.pc, st), st, fpres);
+		st = executeInstruction(readUint32(st.pc, st), st);
 	}
 
-	fclose(fpres);
 	fclose(fp);
 	free(st.mem);
 
