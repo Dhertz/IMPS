@@ -41,17 +41,44 @@ iterator start(struct table *t) {
 	return t->head->next;
 }
 
-iterator end(struct table *t) {
-	return t->foot;
+iterator next(iterator i) {
+	return i->next;
+}
+
+int getKey(iterator i) {
+	return i->key;
 }
 
 void insert(struct table *t, iterator i, string key, int value) {
-	node_t new = allocElem();
+	node_t *new = allocElem();
 	new->key = key;
 	new->value = value;
 	
-	new->prev = iter->prev;
-	new->next = iter;
-	iter->prev->next = new;
-	iter->prev = new;
+	new->prev = i->prev;
+	new->next = i;
+	i->prev->next = new;
+	i->prev = new;
+}
+
+void insertFront(struct table *t, string key, int value) {
+	insert(t, start(t), key, value);
+}
+
+int get(struct table *t, string key) {
+	iterator i = start(t);
+	while(i != null) {
+		if(getKey(i) == key) {
+			return value;
+		}
+	}
+	return NULL;
+}
+
+void freeTable(struct table *t) {
+	node_t *elem = l->head;
+	while(elem != null) {
+		node_t *next = elem->next;
+		freeElem(elem);
+		elem = next;
+	}
 }

@@ -18,6 +18,6 @@ uint8_t getR3(inst_t inst);
 uint16_t getIVal(inst_t inst);
 uint16_t getAddress(inst_t inst);
 int32_t signExtension(int16_t val);
-state_t executeInstruction(inst_t inst, state_t st, FILE *fpres);
+state_t executeInstruction(inst_t inst, state_t st);
 inst_t readUint32(int addr, state_t st);
 # endif
