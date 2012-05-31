@@ -3,16 +3,29 @@
 #include "symtable.h"
 
 int main(int argc, char **argv) {
-	table t;
-	init(&t);
+	FILE *in;
+	long size;
+	char *buffer;
 	
-	insertFront(&t, "hello", 3);
-	insertFront(&t, "hi", 4);
-	
-	for(iterator i = start(&t); i != end(&t); i = next(i)) {
-		printf("%s -> %i\n", getKey(i), get(&t, getKey(i)));
+	if ((in = fopen(argv[1], "rb")) == NULL) {
+		perror("fopen");
+		exit(EXIT_FAILURE);
 	}
 	
-	freeTable(&t);
-	return 0;
+	fseek(in, 0, SEEK_END);
+	size = ftell(in);
+	fseek(in, 0, SEEK_SET);
+	
+	buffer = malloc(size * 4);
+	fread(buffer, 4, size, in);
+	
+	for (int i = 0; i < size; i++) {
+		printf("%c", buffer[i]);
+	}
+	
+	fclose(in);
+	free(buffer);
+
+ 	return EXIT_SUCCESS;
+	
 }
