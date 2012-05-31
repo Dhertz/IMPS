@@ -7,14 +7,11 @@ CFLAGS  = -Wall -pedantic -std=c99
 
 all: assemble emulate
 
+assemble: assemble.o
+	$(CC) $(CFLAGS) -o $@ $^
 
-
-#build executable for emulate
 emulate: emulate.o
-
-#Rules for emulate's .o files	
-emulate.o: emulate.c
-
+	$(CC) $(CFLAGS) -o $@ $^
 
 clean:
 	rm -f *.o
