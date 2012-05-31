@@ -10,7 +10,6 @@ all: assemble emulate symtable
 #build executable for emulate
 emulate: emulate.o
 assemble: assemble.o
-symtable: symtable.o
 
 #Rules for emulate's .o files	
 emulate.o: emulate.c

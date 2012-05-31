@@ -1,23 +1,24 @@
 #include <stdlib.h>
 #include <stdio.h>
-
-struct table {
-	node_t *head;
-	node_t *foot;
-};
+#include <string.h>
 
 typedef struct table_node {
-	string key;
+	char *key;
 	int value;
-	node_t *prev;
-	node_t *next;
+	struct table_node *prev;
+	struct table_node *next;
 } node_t;
 
-typedef node_t iterator;
+typedef struct table {
+	node_t *head;
+	node_t *foot;
+} table;
+
+typedef node_t *iterator;
 
 void *allocElem(void) {
 	node_t *new = malloc(sizeof(node_t));
-	if (elem == NULL) {
+	if (new == NULL) {
 		perror("allocElem");
 		exit(EXIT_FAILURE);
 	}
@@ -28,7 +29,7 @@ void freeElem(node_t *elem) {
 	free(elem);
 }
 
-void init(struct table *t) {
+void init(table *t) {
 	t->head = allocElem();
 	t->foot = allocElem();
 	t->head->prev = NULL;
@@ -37,7 +38,7 @@ void init(struct table *t) {
 	t->foot->prev = t->head;
 }
 
-iterator start(struct table *t) {
+iterator start(table *t) {
 	return t->head->next;
 }
 
@@ -45,14 +46,14 @@ iterator next(iterator i) {
 	return i->next;
 }
 
-int getKey(iterator i) {
+char *getKey(iterator i) {
 	return i->key;
 }
 
-void insert(struct table *t, iterator i, string key, int value) {
+void insert(table *t, iterator i, char *k, int v) {
 	node_t *new = allocElem();
-	new->key = key;
-	new->value = value;
+	new->key = k;
+	new->value = v;
 	
 	new->prev = i->prev;
 	new->next = i;
@@ -60,23 +61,23 @@ void insert(struct table *t, iterator i, string key, int value) {
 	i->prev = new;
 }
 
-void insertFront(struct table *t, string key, int value) {
-	insert(t, start(t), key, value);
+void insertFront(table *t, char *k, int v) {
+	insert(t, start(t), k, v);
 }
 
-int get(struct table *t, string key) {
+int get(table *t, char *k) {
 	iterator i = start(t);
-	while(i != null) {
-		if(getKey(i) == key) {
-			return value;
+	while(i != NULL) {
+		if(strcmp(getKey(i), k) == 0) {
+			return i->value;
 		}
 	}
-	return NULL;
+	return (int) NULL; /* is this right? not sure... */
 }
 
-void freeTable(struct table *t) {
-	node_t *elem = l->head;
-	while(elem != null) {
+void freeTable(table *t) {
+	node_t *elem = t->head;
+	while(elem != NULL) {
 		node_t *next = elem->next;
 		freeElem(elem);
 		elem = next;
