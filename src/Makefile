@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall
+CFLAGS  = -Wall -pedantic -std=c99
 
 .SUFFIXES: .c .o
 
@@ -7,11 +7,14 @@ CFLAGS  = -Wall
 
 all: assemble emulate
 
-assemble: assemble.o
-	$(CC) $(CFLAGS) -o $@ $^
 
+
+#build executable for emulate
 emulate: emulate.o
-	$(CC) $(CFLAGS) -o $@ $^
+
+#Rules for emulate's .o files	
+emulate.o: emulate.c
+
 
 clean:
 	rm -f *.o

@@ -2,26 +2,18 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-
-typedef struct state {
-	uint8_t *mem;
- 	uint16_t pc;
-	int32_t reg[32];
-	int halt;
-} state_t;
-
-typedef uint32_t inst_t;
+#include "emulate.h"
 
 state_t init(void) {
 	state_t st = {.pc = 0, .halt = 0, .reg = {0}};
 	
 	st.mem = calloc(65536, 1);
-
+    
 	if (st.mem == NULL) {
 		perror("malloc");
 		exit(EXIT_FAILURE);
 	}
-
+    
 	return st;
 }
 
@@ -47,7 +39,7 @@ uint8_t getR2(inst_t inst) {
 }
 
 uint8_t getR3(inst_t inst) {
-	uint32_t mask = 0x3E00;
+	uint32_t mask = 0x7C00;
 	/* Hex number for R3 mask */
 	uint32_t res = inst & mask;
 	return res >> 11;
@@ -72,11 +64,11 @@ int32_t signExtension(int16_t val) {
 state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 	uint8_t opCode = getOpCode(inst);
 	st.pc += 4;
-
+    
 	/* fprintf(stderr, "Incremented PC: %i\n", st.pc); */
 	/* fprintf(stderr, "Instruction: %i\n", inst);
-	fprintf(stderr, "Opcode: %i\n\n", opCode); */
-
+     fprintf(stderr, "Opcode: %i\n\n", opCode); */
+    
 	if (opCode == 15 || opCode == 17) {
 		/* J-type instructions */
 		uint16_t addr = getAddress(inst);
@@ -132,12 +124,12 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 			uint8_t r2 = getR2(inst);
 			int32_t val = signExtension(getIVal(inst));
 			
-			/*fprintf(stderr, "Instruction: %i\n", inst);
-			fprintf(stderr, "Opcode: %i\n", opCode);*/
-			fprintf(stderr, "R1: %i\n", r1);
-			fprintf(stderr, "R2: %i\n", r2);
-			fprintf(stderr, "C: %i\n\n", val);
-
+			/* fprintf(stderr, "Instruction: %i\n", inst);
+             fprintf(stderr, "Opcode: %i\n", opCode);
+             fprintf(stderr, "R1: %i\n", r1);
+             fprintf(stderr, "R2: %i\n", r2);
+             fprintf(stderr, "C: %i\n\n", val); */
+            
 			switch (opCode) {
 				case 2:
 					/* addi */
@@ -162,7 +154,7 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 				case 9:
 					/* beq */
 					if (st.reg[r1] == st.reg[r2]) {
-						st.pc = st.pc - 4 + (val * 4);
+						st.pc = st.pc - 4 + (val * 4);				
 					}
 					break;
 				case 10:
@@ -210,17 +202,18 @@ state_t executeInstruction(inst_t inst, state_t st, FILE *fpres) {
 inst_t readUint32(int addr, state_t st) {
 	inst_t res = 0;
 	int i;
-
+    
 	for (i = 0; i < 4; i++) {
 		res |= st.mem[addr + i] << (8 * i);
 	}
-
+    
 	return res;
 }
 
+
 int main(int argc, char **argv) {
 	FILE *fp, *fpres;
-	int size;
+	long size;
 
 	state_t st = init();
 
