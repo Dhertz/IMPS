@@ -1,22 +1,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include "symtable.h"
 
-typedef struct table_node {
-	char *key;
-	int value;
-	struct table_node *prev;
-	struct table_node *next;
-} node_t;
-
-typedef struct table {
-	node_t *head;
-	node_t *foot;
-} table;
-
-typedef node_t *iterator;
-
-void *allocElem(void) {
+static void *allocElem(void) {
 	node_t *new = malloc(sizeof(node_t));
 	if (new == NULL) {
 		perror("allocElem");
@@ -25,7 +12,7 @@ void *allocElem(void) {
 	return new;
 }
 
-void freeElem(node_t *elem) {
+static void freeElem(node_t *elem) {
 	free(elem);
 }
 
@@ -38,19 +25,19 @@ void init(table *t) {
 	t->foot->prev = t->head;
 }
 
-iterator start(table *t) {
+static iterator start(table *t) {
 	return t->head->next;
 }
 
-iterator next(iterator i) {
+static iterator next(iterator i) {
 	return i->next;
 }
 
-char *getKey(iterator i) {
+static char *getKey(iterator i) {
 	return i->key;
 }
 
-void insert(table *t, iterator i, char *k, int v) {
+static void insert(table *t, iterator i, char *k, int v) {
 	node_t *new = allocElem();
 	new->key = k;
 	new->value = v;
@@ -70,9 +57,11 @@ int get(table *t, char *k) {
 	while(i != NULL) {
 		if(strcmp(getKey(i), k) == 0) {
 			return i->value;
+		} else {
+			i = next(i);
 		}
 	}
-	return (int) NULL; /* is this right? not sure... */
+	return (int) NULL;
 }
 
 void freeTable(table *t) {
