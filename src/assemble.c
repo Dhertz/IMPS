@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 #include "symtable.h"
 
 int main(int argc, char **argv) {
@@ -15,13 +16,31 @@ int main(int argc, char **argv) {
 	fseek(in, 0, SEEK_END);
 	size = ftell(in);
 	fseek(in, 0, SEEK_SET);
+	printf("%i", size);
 	
 	buffer = malloc(size * 4);
 	fread(buffer, 4, size, in);
 	
-	for (int i = 0; i < size; i++) {
-		printf("%c", buffer[i]);
+	table symbols;
+	init(&symbols);
+	const char *delim = " ";
+	char *token = strtok(buffer, delim);
+	int offset = 0;
+	
+	while(offset < size) {
+		printf("%s - %i\n", token, offset);
+		if(strchr(token, ':') != NULL) {
+			insertFront(&symbols, token, offset);
+		}
+		offset += strlen(token);
+		token = strtok(NULL, delim);
 	}
+	
+	for(iterator i = start(&symbols); i != end(&symbols); i = next(i)) {
+		printf("%s -> %i\n", getKey(i), get(&symbols, getKey(i)));
+	}
+
+	freeTable(&symbols);
 	
 	fclose(in);
 	free(buffer);
