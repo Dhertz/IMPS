@@ -2,18 +2,22 @@ CC      = gcc
 CFLAGS  = -Wall -pedantic -std=c99
 
 .SUFFIXES: .c .o
-
 .PHONY: all clean
 
+#make all
 all: assemble emulate
 
-assemble: assemble.o
-	$(CC) $(CFLAGS) -o $@ $^
-
+#build executables
 emulate: emulate.o
-	$(CC) $(CFLAGS) -o $@ $^
+assemble: assemble.o symtable.o
+
+#Rules for .o files	
+emulate.o: emulate.c
+assemble.o: assemble.c symtable.h
+symtable.o: symtable.c symtable.h
 
 clean:
 	rm -f *.o
 	rm -f assemble
 	rm -f emulate
+	rm -f symtable
