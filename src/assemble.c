@@ -3,6 +3,11 @@
 #include <string.h>
 #include "symtable.h"
 
+char *getLabel(const char *str) {
+	char *res = strtok_r(str, " ", &str);
+	return res;
+}
+
 int main(int argc, char **argv) {
 	FILE *in;
 	long size;
@@ -16,23 +21,21 @@ int main(int argc, char **argv) {
 	fseek(in, 0, SEEK_END);
 	size = ftell(in);
 	fseek(in, 0, SEEK_SET);
-	printf("%i", size);
 	
 	buffer = malloc(size * 4);
 	fread(buffer, 4, size, in);
 	
 	table symbols;
 	init(&symbols);
-	const char *delim = " ";
+	const char *delim = "\n";
 	char *token = strtok(buffer, delim);
 	int offset = 0;
 	
-	while(offset < size) {
-		printf("%s - %i\n", token, offset);
-		if(strchr(token, ':') != NULL) {
-			insertFront(&symbols, token, offset);
+	while(token != NULL) {
+		if(strchr(token, ':') != '\0') {
+			insertFront(&symbols, getLabel(token), offset);
 		}
-		offset += strlen(token);
+		offset += 4;
 		token = strtok(NULL, delim);
 	}
 	
