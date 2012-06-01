@@ -35,7 +35,10 @@ int main(int argc, char **argv) {
 		if(strchr(token, ':') != '\0') {
 			insertFront(&symbols, getLabel(token), offset);
 		}
-		offset += 4;
+		/* 0x00D = Carriage return - might need more coverage here */ 
+		if(token[0] != 0x00D) {
+			offset += 4;
+		}
 		token = strtok(NULL, delim);
 	}
 	
