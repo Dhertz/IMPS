@@ -81,14 +81,12 @@ int main(int argc, char **argv) {
 		// printf("%s -> %i\n", getKey(i), get(&symbols, getKey(i)));
 	// }
 	
-	
 	while (token != NULL) {
 		char *tokstate;
 		char *opcode = strtok_r(token, " ", &tokstate);
 		if (strchr(opcode, ':') != '\0') {
 			opcode = strtok_r(NULL, " ", &tokstate);
 		}
-			printf("%s\n", opcode);
 		if (strcmp(opcode, ".fill") == 0) {
 			
 		} else if (strcmp(opcode, ".skip") == 0) {
@@ -116,10 +114,13 @@ int main(int argc, char **argv) {
 				vals[2] = atoi(strtok_r(NULL, " ", &tokstate));
 			}
 		}
+		
 		token = strtok_r(NULL, delim, &state);
+		if (strcmp(token, "\0") == 0) {
+			token = strtok_r(NULL, delim, &state);
+		}
 	}
-	
-	
+
 	freeTable(&symbols);
 	
 	fclose(in);
