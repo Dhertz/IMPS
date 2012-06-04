@@ -65,7 +65,7 @@ int get(table *t, char *k) {
 			i = next(i);
 		}
 	}
-	return (int) NULL;
+	return -1;
 }
 
 void freeTable(table *t) {

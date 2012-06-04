@@ -3,15 +3,15 @@
 #include <string.h>
 #include "symtable.h"
 
-char *getLabel(const char *str) {
+char *getLabel(char *str) {
 	char *res = strtok_r(str, " ", &str);
 	return res;
 }
 
 void addMnemonics(table *t) {
-	char *mnemonics[19] = {"halt", "add", "addi", "sub", "subi", "mul",
-						   "muli", "lw", "sw", "beq", "bne", "blt", "bgt"
-						   "ble", "jmp", "jr", "jal", "out"};
+	char *mnemonics[] = {"halt", "add", "addi", "sub", "subi", "mul",
+						 "muli", "lw", "sw", "beq", "bne", "blt", "bgt"
+						 "ble", "jmp", "jr", "jal", "out"};
 								
 	for(int i = 0; i <= 19; i++) {
 		insertFront(t, mnemonics[i], i);
@@ -46,7 +46,7 @@ int main(int argc, char **argv) {
 		if(strchr(token, ':') != '\0') {
 			insertFront(&symbols, getLabel(token), offset);
 		}
-		0x00D = Carriage return - might need more coverage here 
+		/* 0x00D = Carriage return - might need more coverage here */
 		if(token[0] != 0x00D) {
 			offset += 4;
 		}
