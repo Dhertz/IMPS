@@ -3,7 +3,7 @@
 #include <string.h>
 #include "symtable.h"
 
-char *getLabel(const char *str) {
+char *getLabel(char *str) {
 	char *res = strtok_r(str, " ", &str);
 	return res;
 }
@@ -31,12 +31,12 @@ int main(int argc, char **argv) {
 	char *token = strtok(buffer, delim);
 	int offset = 0;
 	
-	while(token != NULL) {
-		if(strchr(token, ':') != '\0') {
+	while (token != NULL) {
+		if (strchr(token, ':') != '\0') {
 			insertFront(&symbols, getLabel(token), offset);
 		}
 		/* 0x00D = Carriage return - might need more coverage here */ 
-		if(token[0] != 0x00D) {
+		if (token[0] != 0x00D) {
 			offset += 4;
 		}
 		token = strtok(NULL, delim);
