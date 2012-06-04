@@ -1,5 +1,5 @@
 CC      = gcc
-CFLAGS  = -Wall -pedantic -std=c99
+CFLAGS  = -Wall -g -pedantic -std=c99
 USER    = dh611
 DIR     = Dropbox/FirstYearWork/Programming/cproject/IMPS/src
 

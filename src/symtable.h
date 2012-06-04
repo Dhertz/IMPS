@@ -23,5 +23,6 @@ char *getKey(iterator i);
 void insertFront(table *t, char *k, int v);
 int get(table *t, char *k);
 void freeTable(table *t);
+char *strtok_r(char *s1, const char *s2, char **s3);
 
 #endif

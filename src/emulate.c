@@ -2,7 +2,15 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
-#include "emulate.h"
+
+typedef struct state {
+	uint8_t *mem;
+ 	uint16_t pc;
+	int32_t reg[32];
+	int halt;
+} state_t;
+
+typedef uint32_t inst_t;
 
 state_t init(void) {
 	state_t st = {.pc = 0, .halt = 0, .reg = {0}};
@@ -110,7 +118,7 @@ state_t executeInstruction(inst_t inst, state_t st) {
 		if (opCode == 0) {
 			/* Halt */
 			fprintf(stderr, "PC: %i\n\n", st.pc);
-			for(int i = 0; i < 32; i++) {
+			for (int i = 0; i < 32; i++) {
 				fprintf(stderr, "R%i: %i\n", i, st.reg[i]);
 			}
 			st.halt = 1;

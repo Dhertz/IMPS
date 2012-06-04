@@ -58,19 +58,19 @@ void insertFront(table *t, char *k, int v) {
 
 int get(table *t, char *k) {
 	iterator i = start(t);
-	while(i != NULL) {
-		if(strcmp(getKey(i), k) == 0) {
+	while (i != NULL) {
+		if (strcmp(getKey(i), k) == 0) {
 			return i->value;
 		} else {
 			i = next(i);
 		}
 	}
-	return (int) NULL;
+	return -1;
 }
 
 void freeTable(table *t) {
 	node_t *elem = t->head;
-	while(elem != NULL) {
+	while (elem != NULL) {
 		node_t *next = elem->next;
 		freeElem(elem);
 		elem = next;

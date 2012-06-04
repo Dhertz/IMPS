@@ -3,9 +3,19 @@
 #include <string.h>
 #include "symtable.h"
 
-char *getLabel(const char *str) {
+char *getLabel(char *str) {
 	char *res = strtok_r(str, " ", &str);
 	return res;
+}
+
+void addMnemonics(table *t) {
+	char *mnemonics[] = {"halt", "add", "addi", "sub", "subi", "mul",
+						 "muli", "lw", "sw", "beq", "bne", "blt", "bgt",
+						 "ble", "bge", "jmp", "jr", "jal", "out"};
+								
+	for(int i = 0; i <= 18; i++) {
+		insertFront(t, mnemonics[i], i);
+	}
 }
 
 int main(int argc, char **argv) {
@@ -27,17 +37,23 @@ int main(int argc, char **argv) {
 	
 	table symbols;
 	init(&symbols);
+	
 	const char *delim = "\n";
 	char *token = strtok(buffer, delim);
 	int offset = 0;
 	
-	while(token != NULL) {
-		if(strchr(token, ':') != '\0') {
+	while (token != NULL) {
+		if (strchr(token, ':') != '\0') {
 			insertFront(&symbols, getLabel(token), offset);
 		}
-		offset += 4;
+		/* 0x00D = Carriage return - might need more coverage here */ 
+		if (token[0] != 0x00D) {
+			offset += 4;
+		}
 		token = strtok(NULL, delim);
 	}
+	
+	addMnemonics(&symbols);
 	
 	for(iterator i = start(&symbols); i != end(&symbols); i = next(i)) {
 		printf("%s -> %i\n", getKey(i), get(&symbols, getKey(i)));
