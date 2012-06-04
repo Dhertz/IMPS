@@ -14,6 +14,7 @@ static void *allocElem(void) {
 
 static void freeElem(node_t *elem) {
 	free(elem);
+	free(elem->k);
 }
 
 void init(table *t) {
@@ -44,9 +45,9 @@ char *getKey(iterator i) {
 static void insert(table *t, iterator i, char *k, int v) {
 	printf("%s\n", k);
 	node_t *new = allocElem();
-	new->key = k;
+	malloc(sizeof(char) * strlen(k));
+	strcopy(new->key, k);
 	new->value = v;
-	
 	new->prev = i->prev;
 	new->next = i;
 	i->prev->next = new;
