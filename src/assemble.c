@@ -55,7 +55,6 @@ int main(int argc, char **argv) {
 	while (token != NULL) {
 		if (strchr(token, ':') != '\0') {
 			char *tmp = getLabel(token);
-			printf("%s\n", tmp);
 			insertFront(&symbols, tmp, offset);
 		}
 		/* 0x00D = Carriage return - might need more coverage here */ 
@@ -65,28 +64,31 @@ int main(int argc, char **argv) {
 		token = strtok_r(NULL, delim, &state);
 	}
 	
-	//addMnemonics(&symbols);
+	addMnemonics(&symbols);
 	
 	free(buffer);
+	
 	fseek(in, 0, SEEK_END);
 	size = ftell(in);
 	fseek(in, 0, SEEK_SET);
+	
 	buffer = malloc(size * 4);
 	fread(buffer, 4, size, in);
 	
 	token = strtok_r(buffer, delim, &state);
 	
-	for(iterator i = start(&symbols); i != end(&symbols); i = next(i)) {
-		printf("%s\n", getKey(i));
-		printf("%i\n", get(&symbols, getKey(i)));
-	}
-	/*
+	// for(iterator i = start(&symbols); i != end(&symbols); i = next(i)) {
+		// printf("%s -> %i\n", getKey(i), get(&symbols, getKey(i)));
+	// }
+	
+	
 	while (token != NULL) {
 		char *tokstate;
 		char *opcode = strtok_r(token, " ", &tokstate);
 		if (strchr(opcode, ':') != '\0') {
 			opcode = strtok_r(NULL, " ", &tokstate);
 		}
+			printf("%s\n", opcode);
 		if (strcmp(opcode, ".fill") == 0) {
 			
 		} else if (strcmp(opcode, ".skip") == 0) {
@@ -116,7 +118,8 @@ int main(int argc, char **argv) {
 		}
 		token = strtok_r(NULL, delim, &state);
 	}
-*/
+	
+	
 	freeTable(&symbols);
 	
 	fclose(in);
