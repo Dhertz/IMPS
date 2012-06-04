@@ -55,6 +55,31 @@ int main(int argc, char **argv) {
 	
 	addMnemonics(&symbols);
 	
+	char *token = strtok(buffer, delim);
+	
+	while (token != NULL) {
+		char *opcode = strtok_r(token, " ", &token);
+		if (strchr(opcode, ':') != '\0') {
+			opcode = strtok_r(NULL, " ", &token);
+		}
+		int mapped = get(&symbols, opcode);
+		if(mapped == 1 || mapped == 3 || mapped == 5) {
+			int R1 = strtok_r(NULL, " ", &token);
+			int R2 = strtok_r(NULL, " ", &token);
+			int R3 = strtok_r(NULL, " ", &token);
+		} else if(mapped == 16 || mapped == 18) {
+			int R1 = strtok_r(NULL, " ", &token);
+		} else if(mapped == 15 || mapped == 17) {
+			int address = get(&symbols, strtok_r(NULL, " ", &token));
+		} else {
+			int R1 = strtok_r(NULL, " ", &token);
+			int R2 = strtok_r(NULL, " ", &token);
+			int val = strtok_r(NULL, " ", &token);
+		}
+			
+	}
+		
+	
 	for(iterator i = start(&symbols); i != end(&symbols); i = next(i)) {
 		printf("%s -> %i\n", getKey(i), get(&symbols, getKey(i)));
 	}
