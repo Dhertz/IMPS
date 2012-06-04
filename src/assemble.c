@@ -10,10 +10,10 @@ char *getLabel(char *str) {
 
 void addMnemonics(table *t) {
 	char *mnemonics[] = {"halt", "add", "addi", "sub", "subi", "mul",
-						 "muli", "lw", "sw", "beq", "bne", "blt", "bgt"
-						 "ble", "jmp", "jr", "jal", "out"};
+						 "muli", "lw", "sw", "beq", "bne", "blt", "bgt",
+						 "ble", "bge", "jmp", "jr", "jal", "out"};
 								
-	for(int i = 0; i <= 19; i++) {
+	for(int i = 0; i <= 18; i++) {
 		insertFront(t, mnemonics[i], i);
 	}
 }
