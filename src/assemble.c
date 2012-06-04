@@ -8,6 +8,16 @@ char *getLabel(char *str) {
 	return res;
 }
 
+void addMnemonics(table *t) {
+	char *mnemonics[] = {"halt", "add", "addi", "sub", "subi", "mul",
+						 "muli", "lw", "sw", "beq", "bne", "blt", "bgt"
+						 "ble", "jmp", "jr", "jal", "out"};
+								
+	for(int i = 0; i <= 19; i++) {
+		insertFront(t, mnemonics[i], i);
+	}
+}
+
 int main(int argc, char **argv) {
 	FILE *in;
 	long size;
@@ -27,6 +37,7 @@ int main(int argc, char **argv) {
 	
 	table symbols;
 	init(&symbols);
+	
 	const char *delim = "\n";
 	char *token = strtok(buffer, delim);
 	int offset = 0;
@@ -41,6 +52,8 @@ int main(int argc, char **argv) {
 		}
 		token = strtok(NULL, delim);
 	}
+	
+	addMnemonics(&symbols);
 	
 	for(iterator i = start(&symbols); i != end(&symbols); i = next(i)) {
 		printf("%s -> %i\n", getKey(i), get(&symbols, getKey(i)));
