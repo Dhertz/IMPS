@@ -12,9 +12,9 @@ char *getLabel(char *str) {
 
 void addMnemonics(table *t) {
 	char *mnemonics[] = {"halt", "add", "addi", "sub", "subi", "mul",
-						 "muli", "lw", "sw", "beq", "bne", "blt", "bgt",
-						 "ble", "bge", "jmp", "jr", "jal", "out"};
-								
+        "muli", "lw", "sw", "beq", "bne", "blt", "bgt",
+        "ble", "bge", "jmp", "jr", "jal", "out"};
+    
 	for(int i = 0; i <= 18; i++) {
 		insertFront(t, mnemonics[i], i);
 	}
@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 		token = strtok_r(NULL, delim, &state);
 	}
 	
-	//addMnemonics(&symbols);
+	addMnemonics(&symbols);
 	
 	free(buffer);
 	fseek(in, 0, SEEK_END);
@@ -80,48 +80,47 @@ int main(int argc, char **argv) {
 		printf("%s\n", getKey(i));
 		printf("%i\n", get(&symbols, getKey(i)));
 	}
-	/*
-	while (token != NULL) {
-		char *tokstate;
-		char *opcode = strtok_r(token, " ", &tokstate);
-		if (strchr(opcode, ':') != '\0') {
-			opcode = strtok_r(NULL, " ", &tokstate);
-		}
-		if (strcmp(opcode, ".fill") == 0) {
-			
-		} else if (strcmp(opcode, ".skip") == 0) {
-		
-		} else {
-			int mapped = get(&symbols, opcode);
-			if (mapped == 0) {
-				int vals[1];
-				vals[0] = mapped;
-			} else if(mapped == 1 || mapped == 3 || mapped == 5) {
-				int vals[3];
-				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
-				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
-				vals[2] = regConvert(strtok_r(NULL, " ", &tokstate));
-			} else if(mapped == 16 || mapped == 18) {
-				int vals[1];
-				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
-			} else if(mapped == 15 || mapped == 17) {
-				int vals[1];
-				vals[0] = get(&symbols, strtok_r(NULL, " ", &tokstate));
-			} else {
-				int vals[3];
-				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
-				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
-				vals[2] = atoi(strtok_r(NULL, " ", &tokstate));
-			}
-		}
-		token = strtok_r(NULL, delim, &state);
-	}
-*/
+	
+     while (token != NULL) {
+     char *tokstate;
+     char *opcode = strtok_r(token, " ", &tokstate);
+     if (strchr(opcode, ':') != '\0') {
+     opcode = strtok_r(NULL, " ", &tokstate);
+     }
+     if (strcmp(opcode, ".fill") == 0) {
+     
+     } else if (strcmp(opcode, ".skip") == 0) {
+     
+     } else {
+     int mapped = get(&symbols, opcode);
+     if (mapped == 0) {
+     int vals[1];
+     vals[0] = mapped;
+     } else if(mapped == 1 || mapped == 3 || mapped == 5) {
+     int vals[3];
+     vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
+     vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
+     vals[2] = regConvert(strtok_r(NULL, " ", &tokstate));
+     } else if(mapped == 16 || mapped == 18) {
+     int vals[1];
+     vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
+     } else if(mapped == 15 || mapped == 17) {
+     int vals[1];
+     vals[0] = get(&symbols, strtok_r(NULL, " ", &tokstate));
+     } else {
+     int vals[3];
+     vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
+     vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
+     vals[2] = atoi(strtok_r(NULL, " ", &tokstate));
+     }
+     }
+     token = strtok_r(NULL, delim, &state);
+     }
 	freeTable(&symbols);
 	
 	fclose(in);
 	free(buffer);
-
+    
  	return EXIT_SUCCESS;
 	
 }
