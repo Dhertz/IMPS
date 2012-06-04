@@ -42,6 +42,7 @@ char *getKey(iterator i) {
 }
 
 static void insert(table *t, iterator i, char *k, int v) {
+	printf("%s\n", k);
 	node_t *new = allocElem();
 	new->key = k;
 	new->value = v;
