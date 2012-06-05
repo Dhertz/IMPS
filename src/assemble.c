@@ -5,7 +5,7 @@
 
 char *getLabel(char *str) {
 	char *st;
-	strtok_r(str, " ", &st);
+	strtok_r(str, ":", &st);
 	char *res = str;
 	return res;
 }
@@ -51,7 +51,6 @@ int main(int argc, char **argv) {
 	char *token = strtok_r(buffer, delim, &state);
 	int offset = 0;
 	
-	
 	while (token != NULL) {
 		if (strchr(token, ':') != '\0') {
 			char *tmp = getLabel(token);
@@ -77,16 +76,17 @@ int main(int argc, char **argv) {
 	
 	token = strtok_r(buffer, delim, &state);
 	
-	// for(iterator i = start(&symbols); i != end(&symbols); i = next(i)) {
-		// printf("%s -> %i\n", getKey(i), get(&symbols, getKey(i)));
-	// }
+	int n = 0;
 	
 	while (token != NULL) {
+		printf("%s\n", token);
+		n += (strlen(token) + 1);
 		char *tokstate;
 		char *opcode = strtok_r(token, " ", &tokstate);
 		if (strchr(opcode, ':') != '\0') {
 			opcode = strtok_r(NULL, " ", &tokstate);
 		}
+		
 		if (strcmp(opcode, ".fill") == 0) {
 			
 		} else if (strcmp(opcode, ".skip") == 0) {
@@ -116,11 +116,13 @@ int main(int argc, char **argv) {
 		}
 		
 		token = strtok_r(NULL, delim, &state);
-		if (strcmp(token, "\0") == 0) {
-			token = strtok_r(NULL, delim, &state);
+		if (token != NULL) {
+			if (strcmp(token, "\r") <= 0) {
+				token = strtok_r(NULL, delim, &state);
+			}
 		}
 	}
-
+	
 	freeTable(&symbols);
 	
 	fclose(in);

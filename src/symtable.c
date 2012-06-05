@@ -59,6 +59,10 @@ void insertFront(table *t, char *k, int v) {
 }
 
 int get(table *t, char *k) {
+	if (strchr(k, '\r') != '\0') {
+		k[strlen(k) - 1] = 0;
+	}
+
 	iterator i = start(t);
 	while (i != NULL) {
 		if (strcmp(getKey(i), k) == 0) {
