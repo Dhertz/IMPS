@@ -6,7 +6,9 @@
 #include "symtable.h"
 
 char *getLabel(char *str) {
-	char *res = strtok_r(str, " ", &str);
+	char *st;
+	strtok_r(str, ":", &st);
+	char *res = str;
 	return res;
 }
 
@@ -47,26 +49,119 @@ void writeInstruction(uint32_t opCode, uint32_t *data, FILE *fp) {
 	}
 
 	fwrite(&inst, 4, 1, fp);
+	
+}
+
+int regConvert(char *reg) {
+	reg++;
+	int ret = atoi(reg);
+	return ret;
 }
 
 int main(int argc, char **argv) {
-	FILE *out;
+	FILE *in;
+	long size;
+	char *buffer;
 
-	if ((out = fopen(argv[1], "wb")) == NULL) {
+	if ((in = fopen(argv[1], "rb")) == NULL) {
 		perror("fopen");
 		exit(EXIT_FAILURE);
 	}
-
-	/* Test input of beq $5 $8 24 */
-	uint32_t opCode = 9;
-	uint32_t *data = malloc(4);
-	data[0] = 5;
-	data[1] = 8;
-	data[2] = 24;
-
-	writeInstruction(opCode, data, out);
-
-	free(data);
+	
+	fseek(in, 0, SEEK_END);
+	size = ftell(in);
+	fseek(in, 0, SEEK_SET);
+	
+	buffer = malloc(size * 4);
+	fread(buffer, 4, size, in);
+	
+	table symbols;
+	init(&symbols);
+	
+	const char *delim = "\n";
+	char *state;
+	char *token = strtok_r(buffer, delim, &state);
+	int offset = 0;
+	
+	while (token != NULL) {
+		if (strchr(token, ':') != '\0') {
+			char *tmp = getLabel(token);
+			insertFront(&symbols, tmp, offset);
+		}
+		/* 0x00D = Carriage return - might need more coverage here */ 
+		if (token[0] != 0x00D) {
+			offset += 4;
+		}
+		token = strtok_r(NULL, delim, &state);
+	}
+	
+	addMnemonics(&symbols);
+	
+	free(buffer);
+	
+	fseek(in, 0, SEEK_END);
+	size = ftell(in);
+	fseek(in, 0, SEEK_SET);
+	
+	buffer = malloc(size * 4);
+	fread(buffer, 4, size, in);
+	
+	FILE *out;
+	if ((out = fopen(argv[2], "wb")) == NULL) {
+		perror("fopen");
+		exit(EXIT_FAILURE);
+	}
+	
+	token = strtok_r(buffer, delim, &state);
+	
+	while (token != NULL) {
+		printf("%s\n", token);
+		char *tokstate;
+		char *opcode = strtok_r(token, " ", &tokstate);
+		if (strchr(opcode, ':') != '\0') {
+			opcode = strtok_r(NULL, " ", &tokstate);
+		}
+		
+		if (strcmp(opcode, ".fill") == 0) {
+			
+		} else if (strcmp(opcode, ".skip") == 0) {
+		
+		} else {
+			int mapped = get(&symbols, opcode);
+			if (mapped == 0) {
+				int vals[1];
+				vals[0] = mapped;
+			} else if(mapped == 1 || mapped == 3 || mapped == 5) {
+				int vals[3];
+				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
+				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
+				vals[2] = regConvert(strtok_r(NULL, " ", &tokstate));
+			} else if(mapped == 16 || mapped == 18) {
+				int vals[1];
+				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
+			} else if(mapped == 15 || mapped == 17) {
+				int vals[1];
+				vals[0] = get(&symbols, strtok_r(NULL, " ", &tokstate));
+			} else {
+				int vals[3];
+				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
+				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
+				vals[2] = atoi(strtok_r(NULL, " ", &tokstate));
+			}
+		}
+		
+		token = strtok_r(NULL, delim, &state);
+		if (token != NULL) {
+			if (strcmp(token, "\r") <= 0) {
+				token = strtok_r(NULL, delim, &state);
+			}
+		}
+	}
+	
+	freeTable(&symbols);
+	
+	fclose(in);
 	fclose(out);
+	free(buffer);
 	return EXIT_SUCCESS;	
 }

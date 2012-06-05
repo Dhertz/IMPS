@@ -13,6 +13,7 @@ static void *allocElem(void) {
 }
 
 static void freeElem(node_t *elem) {
+	free(elem->key);
 	free(elem);
 }
 
@@ -43,7 +44,8 @@ char *getKey(iterator i) {
 
 static void insert(table *t, iterator i, char *k, int v) {
 	node_t *new = allocElem();
-	new->key = k;
+	new->key = malloc(sizeof(char) * strlen(k));
+	strcpy(new->key, k);
 	new->value = v;
 	
 	new->prev = i->prev;
@@ -57,6 +59,10 @@ void insertFront(table *t, char *k, int v) {
 }
 
 int get(table *t, char *k) {
+	if (strchr(k, '\r') != '\0') {
+		k[strlen(k) - 1] = 0;
+	}
+
 	iterator i = start(t);
 	while (i != NULL) {
 		if (strcmp(getKey(i), k) == 0) {
