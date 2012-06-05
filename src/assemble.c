@@ -44,10 +44,10 @@ void writeInstruction(uint32_t opCode, uint32_t *data, FILE *fp) {
 		/* I-type instructions */
 		uint32_t r1 = data[0];
 		uint32_t r2 = data[1];
-		uint32_t val = data[2];
+		int32_t val = data[2];
 		inst |= (r1 << 21);
 		inst |= (r2 << 16);
-		inst |= val;
+		inst |= (val & 0xFFFF);
 		printf("Opcode: %i\nR1: %i\nR2: %i\nValue: %i\n\n", opCode, r1, r2, val);
 	}
 
