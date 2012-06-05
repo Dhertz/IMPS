@@ -154,7 +154,13 @@ int main(int argc, char **argv) {
 				uint32_t vals[3];
 				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
 				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
-				vals[2] = atoi(strtok_r(NULL, " ", &tokstate));
+				char *val = strtok_r(NULL, " ", &tokstate);
+				if (strchr(val, 'x') != '\0') {
+					char *end;
+					vals[2] = strtol(val, &end, 16);
+				} else {
+					vals[2] = atoi(val);
+				}
 				writeInstruction(mapped, vals, out);
 			}
 		}
