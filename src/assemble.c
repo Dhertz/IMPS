@@ -115,6 +115,7 @@ int main(int argc, char **argv) {
 	}
 	
 	token = strtok_r(buffer, delim, &state);
+	offset = 0;
 	
 	while (token != NULL) {
 		printf("%s\n", token);
@@ -125,9 +126,11 @@ int main(int argc, char **argv) {
 		}
 		
 		if (strcmp(opcode, ".fill") == 0) {
-			
+			uint32_t val = atoi(strtok_r(NULL, " ", &tokstate));
+			fwrite(&val, 4, 1, out);
 		} else if (strcmp(opcode, ".skip") == 0) {
-		
+			int x = 0;
+			fwrite(&x, 4, atoi(strtok_r(NULL, " ", &tokstate)), out);
 		} else {
 			uint32_t mapped = get(&symbols, opcode);
 			if (mapped == 0) {
