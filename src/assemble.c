@@ -30,6 +30,7 @@ void writeInstruction(uint32_t opCode, uint32_t *data, FILE *fp) {
 		/* J-type instructions */
 		uint32_t addr = data[0];
 		inst |= addr;
+		printf("Opcode: %i\nAddress: %i\n\n", opCode, addr);
 	} else if (opCode == 1 || opCode == 3 || opCode == 5 || opCode == 16 || opCode == 18) {
 		/* R-type instructions */
 		uint32_t r1 = data[0];
@@ -38,6 +39,7 @@ void writeInstruction(uint32_t opCode, uint32_t *data, FILE *fp) {
 		inst |= (r1 << 21);
 		inst |= (r2 << 16);
 		inst |= (r3 << 11);
+		printf("Opcode: %i\nR1: %i\nR2: %i\nR3: %i\n\n", opCode, r1, r2, r3);
 	} else if (opCode != 0) {
 		/* I-type instructions */
 		uint32_t r1 = data[0];
@@ -46,10 +48,10 @@ void writeInstruction(uint32_t opCode, uint32_t *data, FILE *fp) {
 		inst |= (r1 << 21);
 		inst |= (r2 << 16);
 		inst |= val;
+		printf("Opcode: %i\nR1: %i\nR2: %i\nValue: %i\n\n", opCode, r1, r2, val);
 	}
 
 	fwrite(&inst, 4, 1, fp);
-	
 }
 
 int regConvert(char *reg) {
@@ -139,8 +141,10 @@ int main(int argc, char **argv) {
 				vals[2] = regConvert(strtok_r(NULL, " ", &tokstate));
 				writeInstruction(mapped, vals, out);
 			} else if(mapped == 16 || mapped == 18) {
-				uint32_t vals[1];
+				uint32_t vals[3];
 				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
+				vals[1] = 0;
+				vals[2] = 0;
 				writeInstruction(mapped, vals, out);
 			} else if(mapped == 15 || mapped == 17) {
 				uint32_t vals[1];
