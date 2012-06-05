@@ -158,11 +158,16 @@ int main(int argc, char **argv) {
 				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
 				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
 				char *val = strtok_r(NULL, " ", &tokstate);
-				if (strchr(val, 'x') != '\0') {
-					char *end;
-					vals[2] = strtol(val, &end, 16);
+				
+				if (val[0] < 0x0041) {
+					if (strchr(val, 'x') != '\0') {
+						char *end;
+						vals[2] = strtol(val, &end, 16);
+					} else {
+						vals[2] = atoi(val);
+					}
 				} else {
-					vals[2] = atoi(val);
+					vals[2] = get(&symbols, val);
 				}
 				writeInstruction(mapped, vals, out);
 			}
