@@ -59,7 +59,7 @@ int main(int argc, char **argv) {
 
 	/* Test input of beq $5 $8 24 */
 	uint32_t opCode = 9;
-	uint32_t *data = malloc(1 * sizeof(int));
+	uint32_t *data = malloc(4);
 	data[0] = 5;
 	data[1] = 8;
 	data[2] = 24;
