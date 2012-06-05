@@ -58,7 +58,7 @@ void insertFront(table *t, char *k, int v) {
 	insert(t, start(t), k, v);
 }
 
-int get(table *t, char *k) {
+uint32_t get(table *t, char *k) {
 	if (strchr(k, '\r') != '\0') {
 		k[strlen(k) - 1] = 0;
 	}

@@ -127,26 +127,31 @@ int main(int argc, char **argv) {
 		} else if (strcmp(opcode, ".skip") == 0) {
 		
 		} else {
-			int mapped = get(&symbols, opcode);
+			uint32_t mapped = get(&symbols, opcode);
 			if (mapped == 0) {
-				int vals[1];
+				uint32_t vals[1];
 				vals[0] = mapped;
+				writeInstruction(mapped, vals, out);
 			} else if(mapped == 1 || mapped == 3 || mapped == 5) {
-				int vals[3];
+				uint32_t vals[3];
 				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
 				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
 				vals[2] = regConvert(strtok_r(NULL, " ", &tokstate));
+				writeInstruction(mapped, vals, out);
 			} else if(mapped == 16 || mapped == 18) {
-				int vals[1];
+				uint32_t vals[1];
 				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
+				writeInstruction(mapped, vals, out);
 			} else if(mapped == 15 || mapped == 17) {
-				int vals[1];
+				uint32_t vals[1];
 				vals[0] = get(&symbols, strtok_r(NULL, " ", &tokstate));
+				writeInstruction(mapped, vals, out);
 			} else {
-				int vals[3];
+				uint32_t vals[3];
 				vals[0] = regConvert(strtok_r(NULL, " ", &tokstate));
 				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
 				vals[2] = atoi(strtok_r(NULL, " ", &tokstate));
+				writeInstruction(mapped, vals, out);
 			}
 		}
 		
