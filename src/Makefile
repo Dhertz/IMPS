@@ -5,10 +5,13 @@ USER    = dh611
 #Your Working directory with the IMPS and autotest repos.
 DIR     = Dropbox/FirstYearWork/Programming/cproject
 .SUFFIXES: .c .o
-.PHONY: all clean
+.PHONY: all clean test
 
 #make all
 all: assemble emulate
+
+#make and run tests
+test: assemble emulate
 	ssh $(USER)@fusion24.doc.ic.ac.uk /homes/$(USER)/$(DIR)/IMPS/src/makescript.sh $(USER) $(DIR)
 
 #build executables
