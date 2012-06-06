@@ -1,6 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include "symtable.h"
 
 static void *allocElem(void) {
@@ -13,6 +14,7 @@ static void *allocElem(void) {
 }
 
 static void freeElem(node_t *elem) {
+	free(elem->key);
 	free(elem);
 	free(elem->key);
 }
@@ -43,7 +45,6 @@ char *getKey(iterator i) {
 }
 
 static void insert(table *t, iterator i, char *k, int v) {
-	printf("%s\n", k);
 	node_t *new = allocElem();
 	new->key = malloc(sizeof(char) * strlen(k));
 	strcpy(new->key, k);
@@ -58,7 +59,11 @@ void insertFront(table *t, char *k, int v) {
 	insert(t, start(t), k, v);
 }
 
-int get(table *t, char *k) {
+uint32_t get(table *t, char *k) {
+	if (strchr(k, '\r') != '\0') {
+		k[strlen(k) - 1] = 0;
+	}
+
 	iterator i = start(t);
 	while (i != NULL) {
 		if (strcmp(getKey(i), k) == 0) {

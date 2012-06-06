@@ -3,7 +3,7 @@
 
 typedef struct table_node {
 	char *key;
-	int value;
+	uint32_t value;
 	struct table_node *prev;
 	struct table_node *next;
 } node_t;
@@ -21,7 +21,7 @@ iterator end(table *t);
 iterator next(iterator i);
 char *getKey(iterator i);
 void insertFront(table *t, char *k, int v);
-int get(table *t, char *k);
+uint32_t get(table *t, char *k);
 void freeTable(table *t);
 char *strtok_r(char *s1, const char *s2, char **s3);
 
