@@ -1,14 +1,15 @@
 CC      = gcc
 CFLAGS  = -Wall -g -pedantic -std=c99
+#Your short username. I think you need to have ssh keys set up for this to work.
 USER    = dh611
-DIR     = Dropbox/FirstYearWork/Programming/cproject/IMPS/src
-
+#Your Working directory with the IMPS and autotest repos.
+DIR     = Dropbox/FirstYearWork/Programming/cproject
 .SUFFIXES: .c .o
 .PHONY: all clean
 
 #make all
 all: assemble emulate
-	#ssh $(USER)@fusion24.doc.ic.ac.uk /homes/$(USER)/$(DIR)/makescript.sh
+	ssh $(USER)@fusion24.doc.ic.ac.uk /homes/$(USER)/$(DIR)/IMPS/src/makescript.sh $(USER) $(DIR)
 
 #build executables
 emulate: emulate.o
