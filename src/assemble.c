@@ -30,7 +30,6 @@ void writeInstruction(uint32_t opCode, uint32_t *data, FILE *fp) {
 		/* J-type instructions */
 		uint32_t addr = data[0];
 		inst |= addr;
-		printf("Opcode: %i\nAddress: %i\n\n", opCode, addr);
 	} else if (opCode == 1 || opCode == 3 || opCode == 5 || opCode == 16 || opCode == 18) {
 		/* R-type instructions */
 		uint32_t r1 = data[0];
@@ -39,7 +38,6 @@ void writeInstruction(uint32_t opCode, uint32_t *data, FILE *fp) {
 		inst |= (r1 << 21);
 		inst |= (r2 << 16);
 		inst |= (r3 << 11);
-		printf("Opcode: %i\nR1: %i\nR2: %i\nR3: %i\n\n", opCode, r1, r2, r3);
 	} else if (opCode != 0) {
 		/* I-type instructions */
 		uint32_t r1 = data[0];
@@ -48,7 +46,6 @@ void writeInstruction(uint32_t opCode, uint32_t *data, FILE *fp) {
 		inst |= (r1 << 21);
 		inst |= (r2 << 16);
 		inst |= (val & 0xFFFF);
-		printf("Opcode: %i\nR1: %i\nR2: %i\nValue: %i\n\n", opCode, r1, r2, val);
 	}
 
 	fwrite(&inst, 4, 1, fp);
@@ -90,7 +87,7 @@ int main(int argc, char **argv) {
 			char *tmp = getLabel(token);
 			insertFront(&symbols, tmp, offset);
 		}
-		/* 0x00D = Carriage return - might need more coverage here */ 
+		/* 0x00D = Carriage return - ignore empty lines */ 
 		if (token[0] != 0x00D) {
 			offset += 4;
 		}
@@ -118,17 +115,16 @@ int main(int argc, char **argv) {
 	offset = 0;
 	
 	while (token != NULL) {
-		int location = 0;
-		printf("%s\n", token);
 		char *tokstate;
 		char *opcode = strtok_r(token, " ", &tokstate);
+		
+		/* Jump over the label if there is one */
 		if (strchr(opcode, ':') != '\0') {
 			opcode = strtok_r(NULL, " ", &tokstate);
 		}
 		
 		if (strcmp(opcode, ".fill") == 0) {
 			uint32_t val = atoi(strtok_r(NULL, " ", &tokstate));
-			printf("Opcode: .fill\nValue: %i\n\n", val);
 			fwrite(&val, 4, 1, out);
 		} else if (strcmp(opcode, ".skip") == 0) {
 			int size = atoi(strtok_r(NULL, " ", &tokstate));
@@ -163,7 +159,9 @@ int main(int argc, char **argv) {
 				vals[1] = regConvert(strtok_r(NULL, " ", &tokstate));
 				char *val = strtok_r(NULL, " ", &tokstate);
 				
+				/* Check if the first character is a letter or not */
 				if (val[0] < 0x0041) {
+					/* Check if the numerical value is hex */
 					if (strchr(val, 'x') != '\0') {
 						char *end;
 						vals[2] = strtol(val, &end, 16);
@@ -171,17 +169,22 @@ int main(int argc, char **argv) {
 						vals[2] = atoi(val);
 					}
 				} else {
-					vals[2] = get(&symbols, val) - location;
-					printf("Vals:%i\n", vals[2]);
+					/* Divide C by four if the instruction requires it */
+					if (mapped == 2 || mapped == 4 || mapped == 6 || 
+						mapped == 7 || mapped == 8) {
+						vals[2] = get(&symbols, val);
+					} else {
+						vals[2] = (get(&symbols, val) / 4) - offset;
+					}
 				}
 				writeInstruction(mapped, vals, out);
 			}
 		}
-		if (token[0] != 0x00D) {
-			location += 4;
-		}
+		
 		token = strtok_r(NULL, delim, &state);
+		offset++;
 		if (token != NULL) {
+			/* Jump over lines with just newlines (or other control characters) */
 			if (strcmp(token, "\r") <= 0) {
 				token = strtok_r(NULL, delim, &state);
 			}
