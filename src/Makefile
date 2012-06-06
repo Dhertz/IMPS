@@ -8,7 +8,7 @@ DIR     = Dropbox/FirstYearWork/Programming/cproject/IMPS/src
 
 #make all
 all: assemble emulate
-	ssh $(USER)@fusion24.doc.ic.ac.uk /homes/$(USER)/$(DIR)/makescript.sh
+	#ssh $(USER)@fusion24.doc.ic.ac.uk /homes/$(USER)/$(DIR)/makescript.sh
 
 #build executables
 emulate: emulate.o

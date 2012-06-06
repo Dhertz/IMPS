@@ -118,6 +118,7 @@ int main(int argc, char **argv) {
 	offset = 0;
 	
 	while (token != NULL) {
+		int location = 0;
 		printf("%s\n", token);
 		char *tokstate;
 		char *opcode = strtok_r(token, " ", &tokstate);
@@ -127,10 +128,13 @@ int main(int argc, char **argv) {
 		
 		if (strcmp(opcode, ".fill") == 0) {
 			uint32_t val = atoi(strtok_r(NULL, " ", &tokstate));
+			printf("Opcode: .fill\nValue: %i\n\n", val);
 			fwrite(&val, 4, 1, out);
 		} else if (strcmp(opcode, ".skip") == 0) {
-			int x = 0;
-			fwrite(&x, 4, atoi(strtok_r(NULL, " ", &tokstate)), out);
+			int size = atoi(strtok_r(NULL, " ", &tokstate));
+			uint32_t x[size];
+			memset(x, 0, size*4);
+			fwrite(&x, 4, size, out);
 		} else {
 			uint32_t mapped = get(&symbols, opcode);
 			if (mapped == 0) {
@@ -167,12 +171,15 @@ int main(int argc, char **argv) {
 						vals[2] = atoi(val);
 					}
 				} else {
-					vals[2] = get(&symbols, val);
+					vals[2] = get(&symbols, val) - location;
+					printf("Vals:%i\n", vals[2]);
 				}
 				writeInstruction(mapped, vals, out);
 			}
 		}
-		
+		if (token[0] != 0x00D) {
+			location += 4;
+		}
 		token = strtok_r(NULL, delim, &state);
 		if (token != NULL) {
 			if (strcmp(token, "\r") <= 0) {

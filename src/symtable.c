@@ -16,7 +16,6 @@ static void *allocElem(void) {
 static void freeElem(node_t *elem) {
 	free(elem->key);
 	free(elem);
-	free(elem->key);
 }
 
 void init(table *t) {
