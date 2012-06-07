@@ -1,9 +1,9 @@
 CC      = gcc
 CFLAGS  = -Wall -g -pedantic -std=c99
 #Your short username. Prompts for password if ssh keys not set up.
-USER    = dh611
+USER    = tod11
 #Your Working directory with the IMPS and autotest repos.
-DIR     = Dropbox/FirstYearWork/Programming/cproject
+DIR     = temp
 .SUFFIXES: .c .o
 .PHONY: all clean test
 

@@ -4,6 +4,8 @@
 #include <stdint.h>
 #include "symtable.h"
 
+/* Symbol table ADT (implemented as a linked list) */
+
 static void *allocElem(void) {
 	node_t *new = malloc(sizeof(node_t));
 	if (new == NULL) {
@@ -18,6 +20,7 @@ static void freeElem(node_t *elem) {
 	free(elem);
 }
 
+/* Create a new symbol table */
 void init(table *t) {
 	t->head = allocElem();
 	t->foot = allocElem();
@@ -59,6 +62,7 @@ void insertFront(table *t, char *k, int v) {
 }
 
 uint32_t get(table *t, char *k) {
+    /* remove erroneous line breaks from end of string if needed */
 	if (strchr(k, '\r') != '\0') {
 		k[strlen(k) - 1] = 0;
 	}
