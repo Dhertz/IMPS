@@ -107,24 +107,19 @@ void addMnemonics(table *t) {
     }
 }
 
-table buildSymTable(FILE *in, long size, char* buffer2) {
-    char *buffer = malloc(size * 4);
-    fread(buffer, 4, size, in);
-    
-    /* Create symbol table */
-    table symbols;
-    init(&symbols);
-    
+int buildSymTable(table *symbols, FILE *in, long size, char* buffer) {
     /* First pass - fill symbol table with labels -> offsets */
     const char *delim = "\n";
     char *state;
     char *token = strtok_r(buffer, delim, &state);
     int offset = 0;
+	int numLines = 0;
     
     while (token != NULL) {
+		numLines++;
         if (strchr(token, ':') != '\0') {
             char *tmp = getLabel(token);
-            insertFront(&symbols, tmp, offset);
+            insertFront(symbols, tmp, offset);
         }
         /* 0x00D = Carriage return - ignore empty lines */ 
         if (token[0] != 0x00D) {
@@ -134,14 +129,9 @@ table buildSymTable(FILE *in, long size, char* buffer2) {
     }
     
     /* Add Mnemonics -> Opcodes to symbol table */
-    addMnemonics(&symbols);
-    free(buffer);
+    addMnemonics(symbols);
 	
-    /* Create copy of buffer for use in second pass */
-    buffer2 = malloc(size * 4);
-    memcpy(buffer2, buffer, size);
-	
-	return symbols;
+	return numLines;
 }
 
 static uint32_t writeInstruction(uint32_t opCode, uint32_t *data) {

@@ -6,8 +6,9 @@
 
 int main(int argc, char **argv) {
 	FILE *in;
-	long size;
-    char *buffer = 0;
+    long size;
+    char *buffer;
+	char *buffer2;
 
 	/* Open and read from input file */
     if ((in = fopen(argv[1], "rb")) == NULL) {
@@ -18,26 +19,33 @@ int main(int argc, char **argv) {
     fseek(in, 0, SEEK_END);
     size = ftell(in);
     fseek(in, 0, SEEK_SET);
+
+    buffer = malloc(size * 4);
+    fread(buffer, 4, size, in);
+	
+    /* Create copy of buffer for use in second pass */
+    buffer2 = malloc(size * 4);
+    memcpy(buffer2, buffer, size);
     
     /* First pass - fill symbol table with labels -> offsets */
     table symbols;
-	int numlines = 0;
-	//int *ptr = &numlines;
+    init(&symbols);
+	int numLines = buildSymTable(&symbols, in, size, buffer);
 	
-	symbols = buildSymTable(in, size, buffer);
-	printf("%i\n", numlines);
+    free(buffer);
 	
 	/* Second pass - create binary instructions */
 	const char *delim = "\n";
     char *state;
-    char *token = strtok_r(buffer, delim, &state);
-	uint32_t *assembled = malloc(numlines * sizeof(uint32_t));
+    char *token = strtok_r(buffer2, delim, &state);
+	uint32_t *assembled = malloc(numLines * sizeof(uint32_t));
 	
     int offset = 0;
 	int emptylines = 0;
     
+	/* Fill assembled with the binary instructions */
     while (token != NULL) {
-        //assembled[offset] = convertInstruction(token, symbols, offset);
+        assembled[offset] = convertInstruction(token, symbols, offset);
         
         token = strtok_r(NULL, delim, &state);
         offset++;
@@ -49,5 +57,10 @@ int main(int argc, char **argv) {
             }
         }
     }
-
+    
+    freeTable(&symbols);
+    
+    fclose(in);
+    free(buffer2);
+    return EXIT_SUCCESS;
 }

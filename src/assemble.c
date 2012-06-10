@@ -7,7 +7,8 @@
 int main(int argc, char **argv) {
     FILE *in;
     long size;
-    char *buffer = 0;
+    char *buffer;
+	char *buffer2;
 
 	/* Open and read from input file */
     if ((in = fopen(argv[1], "rb")) == NULL) {
@@ -18,9 +19,20 @@ int main(int argc, char **argv) {
     fseek(in, 0, SEEK_END);
     size = ftell(in);
     fseek(in, 0, SEEK_SET);
+
+    buffer = malloc(size * 4);
+    fread(buffer, 4, size, in);
+	
+    /* Create copy of buffer for use in second pass */
+    buffer2 = malloc(size * 4);
+    memcpy(buffer2, buffer, size);
     
+    /* First pass - fill symbol table with labels -> offsets */
     table symbols;
-	symbols = buildSymTable(in, size, buffer);
+    init(&symbols);
+	buildSymTable(&symbols, in, size, buffer);
+	
+    free(buffer);
 	
     /* Set up output file */
     FILE *out;
@@ -32,7 +44,7 @@ int main(int argc, char **argv) {
     /* Second pass - create binary instructions */
 	const char *delim = "\n";
     char *state;
-    char *token = strtok_r(buffer, delim, &state);
+    char *token = strtok_r(buffer2, delim, &state);
     int offset = 0;
     
     while (token != NULL) {
@@ -54,6 +66,6 @@ int main(int argc, char **argv) {
     
     fclose(in);
     fclose(out);
-    free(buffer);
+    free(buffer2);
     return EXIT_SUCCESS;    
 }
