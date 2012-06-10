@@ -4,6 +4,19 @@
 #include <stdint.h>
 #include "debugger.h"
 
+void readCommand(char buffer[], int size) {
+	fgets(buffer, size, stdin);
+	
+	int i = 0;
+	while (buffer[i] != '\0') {
+		if (buffer[i] == '\n') {
+			buffer[i] = '\0';
+		} else {
+			i++;
+		}
+	}
+}
+
 int main(int argc, char **argv) {
 	FILE *in;
     long size;
@@ -57,6 +70,15 @@ int main(int argc, char **argv) {
             }
         }
     }
+	
+	/* START DEBUGGER */
+	
+	printf("Welcome to the IMPS debugger. Type h for help.\n");
+	char cmd[10];
+	readCommand(cmd, sizeof(cmd));
+	printf("%s\n", cmd);
+	
+	/* END DEBUGGER */
     
     freeTable(&symbols);
     
