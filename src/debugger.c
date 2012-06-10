@@ -2,7 +2,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include "debugger.h"
+#define MAX_COMMAND_LENGTH 30
 
 void readCommand(char buffer[], int size) {
 	fgets(buffer, size, stdin);
@@ -15,6 +17,28 @@ void readCommand(char buffer[], int size) {
 			i++;
 		}
 	}
+}
+
+void addCommands(table *t) {
+	insertFront(t, "quit", 0);
+	insertFront(t, "q", 0);
+	insertFront(t, "break", 1);
+	insertFront(t, "b", 1);
+	insertFront(t, "run", 2);
+	insertFront(t, "r", 2);
+	insertFront(t, "next", 3);
+	insertFront(t, "n", 3);
+	insertFront(t, "continue", 4);
+	insertFront(t, "c", 4);
+	insertFront(t, "print", 5);
+	insertFront(t, "p", 5);
+	insertFront(t, "help", 6);
+	insertFront(t, "h", 6);
+}
+
+void showHelp() {
+	printf("IMPS Debugger commands:\n\n");
+	/* TODO: write these prints */
 }
 
 int main(int argc, char **argv) {
@@ -71,15 +95,65 @@ int main(int argc, char **argv) {
         }
     }
 	
-	/* START DEBUGGER */
+
+	/*
+	START DEBUGGER
+	*/
 	
-	printf("Welcome to the IMPS debugger. Type h for help.\n");
-	char cmd[10];
-	readCommand(cmd, sizeof(cmd));
-	printf("%s\n", cmd);
+	printf("Welcome to the IMPS debugger. Type \"h\" or \"help\" for information on commands.\n");
 	
-	/* END DEBUGGER */
+	/* Create symbol table to store synonomous commands */
+	table commands;
+	init(&commands);
+	addCommands(&commands);
+	
+	/* Array to store line numbers of breakpoints */
+	int* breaks = malloc(sizeof(int) * numLines);
+	int breakCount = 0;
+	
+	bool running = false;
+	
+	/* Pre-run menu loop, for setting breakpoints */
+	while (!running) {
+		/* cmd = the whole input line */
+		char cmd[MAX_COMMAND_LENGTH];
+		readCommand(cmd, sizeof(cmd));
+		
+		/* cmdStr = the command keyword */
+		char *rest;
+		char *cmdStr = strtok_r(cmd, " ", &rest);
+		int cmdCode = get(&commands, cmdStr);
+		int line;
+			
+		switch (cmdCode) {
+			case 0:
+			/* quit - q */
+				exit(EXIT_SUCCESS);
+			break;
+			case 1:
+			/* break - b */
+				line = atoi(strtok_r(NULL, " ", &rest));
+				breaks[breakCount] = line;
+				breakCount++;
+			break;
+			case 2:
+			/* run - r */
+				running = true;
+			break;
+			case 6:
+			/* help - h */
+				showHelp();
+			break;
+			default:
+				printf("Invalid command - %s.\n", cmdStr);
+		}
+	}
+	
+	/*
+	END DEBUGGER
+	*/
     
+	
     freeTable(&symbols);
     
     fclose(in);
