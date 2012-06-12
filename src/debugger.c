@@ -3,7 +3,9 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdbool.h>
-#include "debugger.h"
+#include "symtable.h"
+#include "utils.h"
+
 #define MAX_COMMAND_LENGTH 30
 
 void readCommand(char buffer[], int size) {

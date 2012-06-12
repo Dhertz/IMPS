@@ -15,15 +15,16 @@ test: assemble emulate
 	ssh $(USER)@fusion24.doc.ic.ac.uk /homes/$(USER)/$(DIR)/IMPS/src/makescript.sh $(USER) $(DIR)
 
 #build executables
-debugger: debugger.o utils.o
-emulate: emulate.o utils.o
-assemble: assemble.o utils.o
+emulate: emulate.o symtable.o utils.o
+assemble: assemble.o symtable.o utils.o
+debugger: debugger.o symtable.o utils.o
 
 #Rules for .o files	
-debugger.o: debugger.c debugger.h
-emulate.o: emulate.c debugger.h
-assemble.o: assemble.c debugger.h
-utils.o: utils.c debugger.h
+emulate.o: emulate.c utils.h
+assemble.o: assemble.c utils.h
+debugger.o: debugger.c utils.h
+symtable.o: symtable.c symtable.h
+utils.o: utils.c utils.h
 
 clean:
 	rm -f *.o

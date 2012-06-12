@@ -3,92 +3,8 @@
 #include <string.h>
 #include <stdint.h>
 #include <assert.h>
-#include "debugger.h"
-
-/* TODO: move ADT back into its own file */
-
-static void *allocElem(void) {
-	node_t *new = malloc(sizeof(node_t));
-	if (new == NULL) {
-		perror("allocElem");
-		exit(EXIT_FAILURE);
-	}
-	return new;
-}
-
-static void freeElem(node_t *elem) {
-	free(elem->key);
-	free(elem);
-}
-
-/* Create a new symbol table */
-void init(table *t) {
-	t->head = allocElem();
-	t->foot = allocElem();
-	t->head->prev = NULL;
-	t->foot->next = NULL;
-	t->head->next = t->foot;
-	t->foot->prev = t->head;
-}
-
-iterator start(table *t) {
-	return t->head->next;
-}
-
-iterator end(table *t) {
-	return t->foot;
-}
-
-iterator next(iterator i) {
-	return i->next;
-}
-
-char *getKey(iterator i) {
-	return i->key;
-}
-
-static void insert(table *t, iterator i, char *k, int v) {
-	node_t *new = allocElem();
-	new->key = malloc(sizeof(char) * strlen(k));
-	strcpy(new->key, k);
-	new->value = v;
-	new->prev = i->prev;
-	new->next = i;
-	i->prev->next = new;
-	i->prev = new;
-}
-
-void insertFront(table *t, char *k, int v) {
-	insert(t, start(t), k, v);
-}
-
-uint32_t get(table *t, char *k) {
-    /* remove erroneous line breaks from end of string if needed */
-	if (strchr(k, '\r') != '\0') {
-		k[strlen(k) - 1] = 0;
-	}
-
-	iterator i = start(t);
-	while (i != NULL) {
-		if (strcmp(getKey(i), k) == 0) {
-			return i->value;
-		} else {
-			i = next(i);
-		}
-	}
-	return -1;
-}
-
-void freeTable(table *t) {
-	node_t *elem = t->head;
-	while (elem != NULL) {
-		node_t *next = elem->next;
-		freeElem(elem);
-		elem = next;
-	}
-}
-
-/* END OF ADT */
+#include "symtable.h"
+#include "utils.h"
 
 char *getLabel(char *str) {
     char *st;
@@ -134,7 +50,7 @@ int buildSymTable(table *symbols, FILE *in, long size, char* buffer) {
 	return numLines;
 }
 
-static uint32_t writeInstruction(uint32_t opCode, uint32_t *data) {
+uint32_t writeInstruction(uint32_t opCode, uint32_t *data) {
     assert (0 <= opCode && opCode <= 18);
     uint32_t inst = opCode << 26;
 
@@ -164,7 +80,7 @@ static uint32_t writeInstruction(uint32_t opCode, uint32_t *data) {
     return inst;
 }
 
-static int regConvert(char *reg) {
+int regConvert(char *reg) {
     reg++;
     int ret = atoi(reg);
     return ret;
@@ -253,47 +169,47 @@ uint32_t convertInstruction(char *token, table symbols, int offset) {
 	return (uint32_t) NULL;
 }
 
-static uint8_t getOpCode(inst_t inst) {
+uint8_t getOpCode(inst_t inst) {
 	uint32_t mask = 0xFC000000;
 	/* Hex number for opCode mask */
 	uint32_t res = inst & mask;
 	return res >> 26;
 }
 
-static uint8_t getR1(inst_t inst) {
+uint8_t getR1(inst_t inst) {
 	uint32_t mask = 0x3E00000;
 	/* Hex number for R1 mask */
 	uint32_t res = inst & mask;
 	return res >> 21;
 }
 
-static uint8_t getR2(inst_t inst) {
+uint8_t getR2(inst_t inst) {
 	uint32_t mask = 0x1F0000;
 	/* Hex number for R2 mask */
 	uint32_t res = inst & mask;
 	return res >> 16;
 }
 
-static uint8_t getR3(inst_t inst) {
+uint8_t getR3(inst_t inst) {
 	uint32_t mask = 0x7C00;
 	/* Hex number for R3 mask */
 	uint32_t res = inst & mask;
 	return res >> 11;
 }
 
-static uint16_t getIVal(inst_t inst) {
+uint16_t getIVal(inst_t inst) {
 	uint32_t mask = 0xFFFF;
 	/* Hex number for Immediate value mask */
 	return inst & mask;
 }
 
-static uint16_t getAddress(inst_t inst) {
+uint16_t getAddress(inst_t inst) {
 	uint32_t mask = 0x3FFFFFF;
 	/* Hex number for Address mask */
 	return inst & mask;
 }
 
-static int32_t signExtension(int16_t val) {
+int32_t signExtension(int16_t val) {
 	return (int32_t) val;
 }
 
