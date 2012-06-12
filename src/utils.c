@@ -50,7 +50,7 @@ int buildSymTable(table *symbols, FILE *in, long size, char* buffer) {
 	return numLines;
 }
 
-uint32_t writeInstruction(uint32_t opCode, uint32_t *data) {
+static uint32_t writeInstruction(uint32_t opCode, uint32_t *data) {
     assert (0 <= opCode && opCode <= 18);
     uint32_t inst = opCode << 26;
 
@@ -80,7 +80,7 @@ uint32_t writeInstruction(uint32_t opCode, uint32_t *data) {
     return inst;
 }
 
-int regConvert(char *reg) {
+static int regConvert(char *reg) {
     reg++;
     int ret = atoi(reg);
     return ret;
@@ -169,47 +169,47 @@ uint32_t convertInstruction(char *token, table symbols, int offset) {
 	return (uint32_t) NULL;
 }
 
-uint8_t getOpCode(inst_t inst) {
+static uint8_t getOpCode(inst_t inst) {
 	uint32_t mask = 0xFC000000;
 	/* Hex number for opCode mask */
 	uint32_t res = inst & mask;
 	return res >> 26;
 }
 
-uint8_t getR1(inst_t inst) {
+static uint8_t getR1(inst_t inst) {
 	uint32_t mask = 0x3E00000;
 	/* Hex number for R1 mask */
 	uint32_t res = inst & mask;
 	return res >> 21;
 }
 
-uint8_t getR2(inst_t inst) {
+static uint8_t getR2(inst_t inst) {
 	uint32_t mask = 0x1F0000;
 	/* Hex number for R2 mask */
 	uint32_t res = inst & mask;
 	return res >> 16;
 }
 
-uint8_t getR3(inst_t inst) {
+static uint8_t getR3(inst_t inst) {
 	uint32_t mask = 0x7C00;
 	/* Hex number for R3 mask */
 	uint32_t res = inst & mask;
 	return res >> 11;
 }
 
-uint16_t getIVal(inst_t inst) {
+static uint16_t getIVal(inst_t inst) {
 	uint32_t mask = 0xFFFF;
 	/* Hex number for Immediate value mask */
 	return inst & mask;
 }
 
-uint16_t getAddress(inst_t inst) {
+static uint16_t getAddress(inst_t inst) {
 	uint32_t mask = 0x3FFFFFF;
 	/* Hex number for Address mask */
 	return inst & mask;
 }
 
-int32_t signExtension(int16_t val) {
+static int32_t signExtension(int16_t val) {
 	return (int32_t) val;
 }
 

@@ -8,7 +8,7 @@
 
 #define MAX_COMMAND_LENGTH 30
 
-void readCommand(char buffer[], int size) {
+static void readCommand(char buffer[], int size) {
 	fgets(buffer, size, stdin);
 	
 	int i = 0;
@@ -21,7 +21,7 @@ void readCommand(char buffer[], int size) {
 	}
 }
 
-void addCommands(table *t) {
+static void addCommands(table *t) {
 	insertFront(t, "quit", 0);
 	insertFront(t, "q", 0);
 	insertFront(t, "break", 1);
@@ -38,7 +38,7 @@ void addCommands(table *t) {
 	insertFront(t, "h", 6);
 }
 
-void showHelp() {
+static void showHelp() {
 	printf("IMPS Debugger commands:\n\n");
 	/* TODO: write these prints */
 }
