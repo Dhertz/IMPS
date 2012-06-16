@@ -10,7 +10,7 @@
 
 void readCommand(char buffer[], int size) {
     fgets(buffer, size, stdin);
-    
+	
     int i = 0;
     while (buffer[i] != '\0') {
         if (buffer[i] == '\n') {
@@ -57,6 +57,8 @@ int main(int argc, char **argv) {
     char *buffer;
     char *buffer2;
 
+	printf("Reading input file %s...", argv[1]);
+	
     /* Open and read from input file */
     if ((in = fopen(argv[1], "rb")) == NULL) {
         perror("fopen");
@@ -69,18 +71,22 @@ int main(int argc, char **argv) {
 
     buffer = malloc(size * 4);
     fread(buffer, 4, size, in);
-     
+	printf("done.\n");
+	
     /* Create copy of buffer for use in second pass */
     buffer2 = malloc(size * 4);
     memcpy(buffer2, buffer, size);
     
+	printf("Building symbol table...");
+	
     /* First pass - fill symbol table with labels -> offsets */
     table symbols;
     init(&symbols);
     int numLines = buildSymTable(&symbols, in, size, buffer);
      
     free(buffer);
-     
+    printf("done.\n");
+	
     /* Second pass - create binary instructions */
     const char *delim = "\n";
     char *state;
@@ -91,7 +97,7 @@ int main(int argc, char **argv) {
     int emptylines = 0;
     int emptylinenos[emptylines];
     /* Fill assembled with the binary instructions */
-    char **source = malloc(numLines * sizeof(char));
+    char **source = malloc(size * sizeof(char));
     if (source == NULL) {
         perror("malloc");
         exit(EXIT_FAILURE);
@@ -113,7 +119,7 @@ int main(int argc, char **argv) {
             }
         }
     }
-     
+    
 
     /*
     START DEBUGGER
@@ -135,60 +141,60 @@ int main(int argc, char **argv) {
     char *rest, *addrString, *end;
     /* Pre-run menu loop, for setting breakpoints */
     while (!running) {
-         /* cmd = the whole input line */
-         char cmd[MAX_COMMAND_LENGTH];
-         readCommand(cmd, sizeof(cmd));
-         
-         /* cmdStr = the command keyword */
-         
-         char *cmdStr = strtok_r(cmd, " ", &rest);
-         int cmdCode = get(&commands, cmdStr);
-         
-              
-         switch (cmdCode) {
-              case 0:
-              /* quit - q */
-                   exit(EXIT_SUCCESS);
-              break;
-              case 1:
-              /* break - b */
-                   line = atoi(strtok_r(NULL, " ", &rest));
-                   int i = 0;
-                   while (emptylinenos[i] < line) {
-                    line--;
-                   }
-                   breaks[breakCount] = line;
-                   breakCount++;
-              break;
-              case 2:
-              /* run - r */
-                   running = true;
-              break;
-              case 6:
-              /* help - h */
-                   showHelp();
-              break;
-              case 7:
-                    /* setRegister - sR */
-                    regno = atoi(strtok_r(NULL, " ", &rest));
-                    value = atoi(strtok_r(NULL, " ", &rest));
-                    st.reg[regno] = value;
-              break;
-              case 8:
-                    /* setAddress - sA */
-                    addrString = strtok_r(NULL, " ", &rest);
-                    addr = strtol(addrString, &end, 16);
-                    value = atoi(strtok_r(NULL, " ", &rest));
-                    st.mem[addr] = value;
-
-              default:
-                   printf("Invalid command - %s.\n", cmdStr);
-         }
+        /* cmd = the whole input line */
+        char cmd[MAX_COMMAND_LENGTH];
+        readCommand(cmd, sizeof(cmd));
+		
+        /* cmdStr = the command keyword */
+        char *cmdStr = strtok_r(cmd, " ", &rest);
+        int cmdCode = get(&commands, cmdStr);
+        
+        switch (cmdCode) {
+            case 0:
+            /* quit - q */
+				printf("Qutting...\n");
+				exit(EXIT_SUCCESS);
+				break;
+            case 1:
+            /* break - b */
+                line = atoi(strtok_r(NULL, " ", &rest));
+                int i = 0;
+                while (emptylinenos[i] < line) {
+					line--;
+                }
+                breaks[breakCount] = line;
+                breakCount++;
+				printf("\nBreakpoint set at line %i.\n", line);
+				break;
+            case 2:
+            /* run - r */
+                running = true;
+				break;
+            case 6:
+            /* help - h */
+                showHelp();
+				break;
+            case 7:
+                /* setRegister - sR */
+                regno = atoi(strtok_r(NULL, " ", &rest));
+                value = atoi(strtok_r(NULL, " ", &rest));
+                st.reg[regno] = value;
+				break;
+            case 8:
+                /* setAddress - sA */
+                addrString = strtok_r(NULL, " ", &rest);
+                addr = strtol(addrString, &end, 16);
+                value = atoi(strtok_r(NULL, " ", &rest));
+                st.mem[addr] = value;
+				break;
+            default:
+                printf("Invalid command - %s.\n", cmdStr);
+        }
     }
+	
+    /* START EMULATING */
     int linecount = 1;
     while (st.halt == 0) {
-	printf("%i\n", linecount);
-    /* START EMULATING */
         for(int i = 0; i < breakCount; i++) {
             if(linecount == breaks[i]) {
 				/*Hacky emptyline adding back in*/
@@ -197,60 +203,67 @@ int main(int argc, char **argv) {
 					breakpt++;
                 }
 				bool cont = false;
-				char *cmd;
+				
+				printf("\nBreakpoint at line %i reached. What do you want to do?\n", breakpt);
+				
 				while(!cont) {
-					printf("Breakpoint at line %i reached. What do you want to do?", breakpt);
-					printf("The line is: %s", source[linecount]);
+					printf("%i. %s\n", linecount, source[linecount]);
+					
+					char cmd[MAX_COMMAND_LENGTH];
 					readCommand(cmd, sizeof(cmd));
 					char *rest;
 					char *cmdStr = strtok_r(cmd, " ", &rest);
 					int cmdCode = get(&commands, cmdStr);
 				
 					switch (cmdCode) {
-					case 0:
-						/* quit - q */
-						exit(EXIT_SUCCESS);
-					break;
-					case 3:
-						/* next - n */
-						st = executeInstruction(readUint32(st.pc, st), st);
-					break;
-					case 4:
-						/* continue - c */
-						cont = true;
-					case 5:
-						printf("lots of stuff here");
-					break;
-					case 6:
-						/* help - h */
-						showHelp();
-					break;
-					case 7:
-					/* setRegister - sR */
-					regno = atoi(strtok_r(NULL, " ", &rest));
-					value = atoi(strtok_r(NULL, " ", &rest));
-					st.reg[regno] = value;
-					break;
-					case 8:
-						/* setAddress - sA */
-					addrString = strtok_r(NULL, " ", &rest);
-					addr = strtol(addrString, &end, 16);
-					value = atoi(strtok_r(NULL, " ", &rest));
-					st.mem[addr] = value;
-					break;
-					case 9:
-						/* printRegister - pR */
-						regno = atoi(strtok_r(NULL, " ", &rest));
-						printf("Register %i's value is %i", regno, st.reg[regno]);
-					break;
-					case 10:
-						/* printAddress - pA */
-						addrString = strtok_r(NULL, " ", &rest);
-						addr = strtol(addrString, &end, 16);
-						printf("Address %i's value is %i", addr, st.mem[addr]);
-					break;
-					default:
-					printf("Invalid command - %s.\n", cmdStr);
+						case 0:
+							/* quit - q */
+							printf("Qutting...\n");
+							exit(EXIT_SUCCESS);
+							break;
+						case 3:
+							/* next - n */
+							st = executeInstruction(readUint32(st.pc, st), st);
+							linecount++;
+							break;
+						case 4:
+							/* continue - c */
+							cont = true;
+							break;
+						case 5:
+							/* print - p */
+							printReg(st);
+							break;
+						case 6:
+							/* help - h */
+							showHelp();
+							break;
+						case 7:
+							/* setRegister - sR */
+							regno = atoi(strtok_r(NULL, " ", &rest));
+							value = atoi(strtok_r(NULL, " ", &rest));
+							st.reg[regno] = value;
+							break;
+						case 8:
+							/* setAddress - sA */
+							addrString = strtok_r(NULL, " ", &rest);
+							addr = strtol(addrString, &end, 16);
+							value = atoi(strtok_r(NULL, " ", &rest));
+							st.mem[addr] = value;
+							break;
+						case 9:
+							/* printRegister - pR */
+							regno = atoi(strtok_r(NULL, " ", &rest));
+							printf("Register %i's value is %i", regno, st.reg[regno]);
+							break;
+						case 10:
+							/* printAddress - pA */
+							addrString = strtok_r(NULL, " ", &rest);
+							addr = strtol(addrString, &end, 16);
+							printf("Address %i's value is %i", addr, st.mem[addr]);
+							break;
+						default:
+							printf("Invalid command - %s.\n", cmdStr);
 					}
 				}
             }    
@@ -263,7 +276,7 @@ int main(int argc, char **argv) {
     END DEBUGGER
     */
     
-     
+    
     freeTable(&symbols);
     free(source);
     fclose(in);

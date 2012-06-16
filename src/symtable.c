@@ -68,7 +68,7 @@ uint32_t get(table *t, char *k) {
 	}
 
 	iterator i = start(t);
-	while (i != NULL) {
+	while (i != t->foot) {
 		if (strcmp(getKey(i), k) == 0) {
 			return i->value;
 		} else {

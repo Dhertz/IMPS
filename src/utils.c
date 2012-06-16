@@ -105,7 +105,7 @@ uint32_t convertInstruction(char *token, table symbols, int offset) {
         uint32_t x[size];
         memset(x, 0, size*4);
         fwrite(&x, 4, size, out);
-	*/	
+	*/
 		
     } else {
         /* mapped = opCode number */
@@ -261,10 +261,7 @@ state_t executeInstruction(inst_t inst, state_t st) {
 	} else {
 		if (opCode == 0) {
 			/* Halt */
-			fprintf(stderr, "PC: %i\n\n", st.pc);
-			for (int i = 0; i < 32; i++) {
-				fprintf(stderr, "R%i: %i\n", i, st.reg[i]);
-			}
+			printReg(st);
 			st.halt = 1;
 		} else if (opCode <= 18) {
 			/* I-type instructions */
@@ -339,6 +336,13 @@ state_t executeInstruction(inst_t inst, state_t st) {
 	}
 	
 	return st;
+}
+
+void printReg(state_t st) {
+	fprintf(stderr, "PC: %i\n\n", st.pc);
+	for (int i = 0; i < 32; i++) {
+		fprintf(stderr, "R%i: %i\n", i, st.reg[i]);
+	}
 }
 
 inst_t readUint32(int addr, state_t st) {
