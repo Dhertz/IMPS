@@ -107,7 +107,7 @@ int main(int argc, char **argv) {
     while (token != NULL) {
 		/* Save token for printing at breakpoints */
         source[offset] = token;
-		uint32_t inst = convertInstruction(token, symbols, offset);
+		uint32_t inst = convertInstruction(token, symbols, offset, st);
         memcpy(st.mem + (offset * 4), &inst, sizeof(uint32_t));
         token = strtok_r(NULL, delim, &state);
         offset++;

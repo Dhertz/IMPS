@@ -86,7 +86,7 @@ static int regConvert(char *reg) {
     return ret;
 }
 
-uint32_t convertInstruction(char *token, table symbols, int offset) {
+uint32_t convertInstruction(char *token, table symbols, int offset, state_t st) {
 	char *tokstate;
     char *opcode = strtok_r(token, " ", &tokstate);
     
@@ -99,6 +99,13 @@ uint32_t convertInstruction(char *token, table symbols, int offset) {
         uint32_t val = atoi(strtok_r(NULL, " ", &tokstate));
         return val;
     } else if (strcmp(opcode, ".skip") == 0) {
+		/* Set memory to 0 here (apart from first memory location which is 
+		   done on return) */
+		int size = atoi(strtok_r(NULL, " ", &tokstate));
+		
+		for (int i = 1; i < size; i++) {
+			memset(st.mem + ((offset * 4) + (4 * i)), 0, sizeof(uint32_t));
+		}
 		return 0;
     } else {
         /* mapped = opCode number */
