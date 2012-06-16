@@ -1,7 +1,9 @@
 jmp magicNumber
 
 space: .fill 32 - ASCII for ' '
+two:   .fill 50 - ASCII for '2'
 four:  .fill 52 - ASCII for '4'
+five:  .fill 53 - ASCII for '5'
 six:   .fill 54 - ASCII for '6'
 p:     .fill 80 - ASCII for 'P'
 
@@ -23,10 +25,13 @@ widthHeight: lw $1 $0 six
              beq $2 $3 2      - Skip if outputted twice,
              jmp widthHeight  -   otherwise loop
 
-maxValue:    addi $1 $0 255
-             out $1           - Output 255 to stdout
+maxValue:    lw $1 $0 two
+             out $1
+             lw $1 $0 five
+             out $1
+             out $1
              lw $1 $0 space
-             out $1           - Output " " to stdout
+             out $1           - Output "255 " to stdout
 
 
              addi $2 $0 0     - $2 = 0
