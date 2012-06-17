@@ -166,7 +166,7 @@ uint32_t convertInstruction(char *token, table symbols, int offset, state_t st) 
             return writeInstruction(mapped, vals);
         }
     }
-	return (uint32_t) NULL;
+	return 0; /* Halt for unrecognised command. This should never be hit anyway. */
 }
 
 static uint8_t getOpCode(inst_t inst) {
