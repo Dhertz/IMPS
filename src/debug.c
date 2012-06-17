@@ -11,14 +11,12 @@
 /*
  * TODO:
  *
- * 1. Come up with better halt solution than exit(0) in utils.c:268
- *    Frees need to be accounted for (remember it's not just used by debugger)
- * 2. Write showHelp
- * 3. Detect empty lines properly. strtok removes them anyways because "\n" is our delimiter,
+ * 1. Write showHelp
+ * 2. Detect empty lines properly. strtok removes them anyways because "\n" is our delimiter,
  *    but we need to know where they are so that the human argument to break can be mapped to
  *    an assembler line number 
- * 4. Breakpoint doesn't output full line, because it points to the strings, which are mangled somewhere
- * 5. Command for printing PC? (What about setting?)
+ * 3. Breakpoint doesn't output full line, because it points to the strings, which are mangled somewhere
+ * 4. Command for printing PC? (What about setting?)
  */
 
 void readCommand(char buffer[], int size) {
@@ -215,6 +213,7 @@ int main(int argc, char **argv) {
 							/* next - n */
 							st = executeInstruction(readUint32(st.pc, st), st);
 							linecount++;
+							if (st.halt == 1) goto endDebugger;
 							break;
 						case 4:
 							/* continue - c */

@@ -263,8 +263,6 @@ state_t executeInstruction(inst_t inst, state_t st) {
 			/* Halt */
 			printReg(st);
 			st.halt = 1;
-			// This isn't right, means appropriate free commands wont be executed:
-			exit(0);
 		} else if (opCode <= 18) {
 			/* I-type instructions */
 			uint8_t r1 = getR1(inst);
