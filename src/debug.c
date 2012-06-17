@@ -13,12 +13,12 @@
  *
  * 1. Come up with better halt solution than exit(0) in utils.c:268
  *    Frees need to be accounted for (remember it's not just used by debugger)
- * 2. Static method for adding commands that takes long and short arguments
- * 3. Write showHelp
- * 4. Detect empty lines properly. strtok removes them anyways because "\n" is our delimiter,
+ * 2. Write showHelp
+ * 3. Detect empty lines properly. strtok removes them anyways because "\n" is our delimiter,
  *    but we need to know where they are so that the human argument to break can be mapped to
  *    an assembler line number 
- * 5. Breakpoint doesn't output full line, because it points to the strings, which are mangled somewhere
+ * 4. Breakpoint doesn't output full line, because it points to the strings, which are mangled somewhere
+ * 5. Command for printing PC? (What about setting?)
  */
 
 void readCommand(char buffer[], int size) {
@@ -34,29 +34,23 @@ void readCommand(char buffer[], int size) {
     }
 }
 
+static void _addCommand(table *t, char *longCmd, char *shortCmd, int pos) {
+	insertFront(t, longCmd, pos);
+	insertFront(t, shortCmd, pos);
+}
+
 void addCommands(table *t) {
-    insertFront(t, "quit", 0);
-    insertFront(t, "q", 0);
-    insertFront(t, "break", 1);
-    insertFront(t, "b", 1);
-    insertFront(t, "run", 2);
-    insertFront(t, "r", 2);
-    insertFront(t, "next", 3);
-    insertFront(t, "n", 3);
-    insertFront(t, "continue", 4);
-    insertFront(t, "c", 4);
-    insertFront(t, "print", 5);
-    insertFront(t, "p", 5);
-    insertFront(t, "help", 6);
-    insertFront(t, "h", 6);
-    insertFront(t, "setReg", 7);
-    insertFront(t, "sR", 7);
-    insertFront(t, "setAddr", 8);
-    insertFront(t, "sA", 8);
-    insertFront(t, "printReg", 9);
-    insertFront(t, "pR", 9);
-    insertFront(t, "printAddr", 10);
-    insertFront(t, "pA", 10);
+	_addCommand(t, "quit", "q", 0);
+	_addCommand(t, "break", "b", 1);
+	_addCommand(t, "run", "r", 2);
+	_addCommand(t, "next", "n", 3);
+	_addCommand(t, "continue", "c", 4);
+	_addCommand(t, "print", "p", 5);
+	_addCommand(t, "help", "h", 6);
+	_addCommand(t, "setReg", "sR", 7);
+	_addCommand(t, "setAddr", "sA", 8);
+	_addCommand(t, "printReg", "pR", 9);
+	_addCommand(t, "printAddr", "pA", 10);
 }
 
 void showHelp() {
