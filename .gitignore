@@ -6,5 +6,4 @@
 *.o
 emulate
 assemble
-debugger
-
+debug
