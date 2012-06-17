@@ -12,9 +12,8 @@
  * TODO:
  *
  * 1. Write showHelp
- * 2. Detect empty lines properly. strtok removes them anyways because "\n" is our delimiter,
- *    but we need to know where they are so that the human argument to break can be mapped to
- *    an assembler line number 
+ * 2. Full lines not shown in breakpoint (used to work but broke after newline detection code)
+ * 3. Breakpoints output assembly line number, not human line number (map needed?)
  * 3. Command for printing PC? (What about setting?)
  */
 
@@ -55,11 +54,18 @@ void showHelp() {
     /* TODO: write these prints */
 }
 
+static bool _isEmptyLine(int line, int emptylinenos[], int emptyLines) {
+	int i;
+	for (i = 0; i < emptyLines; i++) {
+		if (emptylinenos[i] == line) return true;
+	}
+	return false;
+}
+
 int main(int argc, char **argv) {
     FILE *in;
     long size;
-    char *buffer;
-    char *buffer2;
+    char *buffer, *origBuffer, *buffer2;
 
 	printf("Reading input file %s... ", argv[1]);
 	
@@ -78,10 +84,28 @@ int main(int argc, char **argv) {
 	fclose(in);
 	printf("done.\n");
 
-    /* Create copy of buffer for use in second pass */
+    /* Create copies of buffer for use in second pass */
     buffer2 = malloc(size * 4);
     memcpy(buffer2, buffer, size);
-    
+
+	int emptylinenos[size];
+	int emptylines = 0, curline = 0;
+	bool prevEmpty = false;
+
+	origBuffer = buffer;
+	while (*buffer != '\0') {
+		if (*buffer == '\n') {
+			curline++;
+			if (prevEmpty) {
+				emptylinenos[emptylines] = curline;
+				emptylines++;
+			}
+		}
+		prevEmpty = *buffer == '\n';
+		buffer++;
+	}
+	buffer = origBuffer;
+ 
 	printf("Building symbol table... ");
 	
     /* First pass - fill symbol table with labels -> offsets */
@@ -91,33 +115,33 @@ int main(int argc, char **argv) {
      
     free(buffer);
     printf("done.\n");
-	
+
     /* Second pass - create binary instructions */
     const char *delim = "\n";
     char *state;
-    char *token = strtok_r(buffer2, delim, &state), *tokencopy;
+	char *token = strtok_r(buffer2, delim, &state); // *tokencopy;
     state_t st = initState();
-     
-    int offset = 0;
 	
     /* Fill assembled with the binary instructions */
+    int offset = 0;
     char **source = malloc(size * sizeof(char));
     if (source == NULL) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
-	
+
     while (token != NULL) {
-		printf("%i %s\n", offset + 1, token);
 		/* Save token for printing at breakpoints */
-		strcpy(tokencopy, token);
-        source[offset] = tokencopy;
+		/* The strcpy line used to work, but broke after I added in the newline detection
+		   Reverted back for now */
+		// strcpy(tokencopy, token);
+		// printf("%i. %s\n", offset + 1, token);
+        source[offset] = token;
 		uint32_t inst = convertInstruction(token, symbols, offset, st);
         memcpy(st.mem + (offset * 4), &inst, sizeof(uint32_t));
         token = strtok_r(NULL, delim, &state);
         offset++;
     }
-    
 
     /*
     START DEBUGGER
@@ -135,7 +159,7 @@ int main(int argc, char **argv) {
     int breakCount = 0;
     
     bool running = false;
-    int line, regno, value, addr;
+    int line, lineCopy, regno, value, addr;
     char *rest, *addrString, *end;
 	
     /* Pre-run menu loop, for setting breakpoints */
@@ -156,9 +180,16 @@ int main(int argc, char **argv) {
             case 1:
 				/* break - b */
                 line = atoi(strtok_r(NULL, " ", &rest));
+				lineCopy = line;
+				printf("Read %i", line);
+				for (int i = 0; i <= lineCopy; i++) {
+					if (_isEmptyLine(i, emptylinenos, emptylines)) {
+						line--;
+					}
+				}
                 breaks[breakCount] = line;
                 breakCount++;
-				printf("\nBreakpoint set at line %i.\n", line);
+				printf("\nBreakpoint set at line %i.\n", lineCopy);
 				break;
             case 2:
 				/* run - r */
