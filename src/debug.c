@@ -87,6 +87,7 @@ int main(int argc, char **argv) {
     buffer2 = malloc(size * 4);
     memcpy(buffer2, buffer, size);
 
+	/* Detect empty lines, needed for human to assembly line number conversion in breakpoints */
 	int emptylinenos[size];
 	int emptylines = 0, curline = 0;
 	bool prevEmpty = false;
@@ -104,14 +105,12 @@ int main(int argc, char **argv) {
 		buffer++;
 	}
 	buffer = origBuffer;
- 
-	printf("Building symbol table... ");
-	
+ 	
     /* First pass - fill symbol table with labels -> offsets */
+	printf("Building symbol table... ");
     table symbols;
     init(&symbols);
     int numLines = buildSymTable(&symbols, in, size, buffer);
-     
     free(buffer);
     printf("done.\n");
 
@@ -159,9 +158,10 @@ int main(int argc, char **argv) {
     
     bool running = false;
     int line, lineCopy, regno, value, addr;
+
+	/* Initialise line number map used in human to assembly line conversion */
     char *rest, *addrString, *end;
 	int lineNoMap[curline + 1];
-
 	for (int i = 0; i < curline + 1; i++) {
 		lineNoMap[i] = i;
 	}
@@ -301,7 +301,6 @@ int main(int argc, char **argv) {
     /*
     END DEBUGGER
     */
-
     endDebugger:
 		free(breaks);
         free(source);
