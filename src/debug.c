@@ -61,6 +61,13 @@ static bool _isEmptyLine(int line, int emptylinenos[], int emptyLines) {
 	return false;
 }
 
+static int _mapLookup(int assLine, int lineNoMap[], int noLines) {
+	for (int i = 0; i < noLines; i++) {
+		if (lineNoMap[i] == assLine) return i;
+	}
+	return -1;
+}
+
 int main(int argc, char **argv) {
     FILE *in;
     long size;
@@ -164,7 +171,14 @@ int main(int argc, char **argv) {
 	int lineNoMap[curline + 1];
 	for (int i = 0; i < curline + 1; i++) {
 		lineNoMap[i] = i;
+		for (int j = 0; j <= i; j++) {
+			if (_isEmptyLine(j, emptylinenos, emptylines)) {
+				lineNoMap[i]--;
+			}
+		}
 	}
+
+	for (int i = 0; i < curline + 1; i++) printf("lineNoMap[%i] = %i\n", i, lineNoMap[i]);
 
     /* Pre-run menu loop, for setting breakpoints */
     while (!running) {
@@ -185,12 +199,7 @@ int main(int argc, char **argv) {
 				/* break - b */
                 line = atoi(strtok_r(NULL, " ", &rest));
 				lineCopy = line;
-				for (int i = 0; i <= lineCopy; i++) {
-					if (_isEmptyLine(i, emptylinenos, emptylines)) {
-						line--;
-					}
-				}
-				lineNoMap[line] = lineCopy;
+				line = lineNoMap[line];
                 breaks[breakCount] = line;
                 breakCount++;
 				printf("\nBreakpoint set at line %i.\n", lineCopy);
@@ -228,10 +237,10 @@ int main(int argc, char **argv) {
             if (linecount == breaks[i]) {
 				bool cont = false;
 				
-				printf("\nBreakpoint at line %i reached. What do you want to do?\n", lineNoMap[line]);
+				printf("\nBreakpoint at line %i reached. What do you want to do?\n", _mapLookup(linecount, lineNoMap, curline + 1));
 				
 				while (!cont) {
-					printf("%i. %s\n", lineNoMap[linecount], source[linecount - 1]);
+					printf("%i. %s\n", _mapLookup(linecount, lineNoMap, curline + 1), source[linecount - 1]);
 					
 					char cmd[MAX_COMMAND_LENGTH];
 					readCommand(cmd, sizeof(cmd));
