@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
 						case 0:
 							/* quit - q */
 							printf("Quitting...\n");
-							goto endDebugger;q
+							goto endDebugger;
 						case 3:
 							/* next - n */
 							st = executeInstruction(readUint32(st.pc, st), st);
