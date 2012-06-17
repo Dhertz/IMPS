@@ -8,7 +8,7 @@ DIR     = Dropbox/FirstYearWork/Programming/cproject/
 .PHONY: all clean test
 
 #make all
-all: assemble emulate debugger
+all: assemble emulate debug
 
 #make and run tests
 test: assemble emulate
@@ -17,12 +17,12 @@ test: assemble emulate
 #build executables
 emulate: emulate.o symtable.o utils.o
 assemble: assemble.o symtable.o utils.o
-debugger: debugger.o symtable.o utils.o
+debug: debug.o symtable.o utils.o
 
 #Rules for .o files	
 emulate.o: emulate.c utils.h
 assemble.o: assemble.c utils.h
-debugger.o: debugger.c utils.h
+debug.o: debug.c utils.h
 symtable.o: symtable.c symtable.h
 utils.o: utils.c utils.h
 
@@ -30,4 +30,4 @@ clean:
 	rm -f *.o
 	rm -f assemble
 	rm -f emulate
-	rm -f debugger
+	rm -f debug
