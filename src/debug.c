@@ -15,8 +15,7 @@
  * 2. Detect empty lines properly. strtok removes them anyways because "\n" is our delimiter,
  *    but we need to know where they are so that the human argument to break can be mapped to
  *    an assembler line number 
- * 3. Breakpoint doesn't output full line, because it points to the strings, which are mangled somewhere
- * 4. Command for printing PC? (What about setting?)
+ * 3. Command for printing PC? (What about setting?)
  */
 
 void readCommand(char buffer[], int size) {
@@ -96,7 +95,7 @@ int main(int argc, char **argv) {
     /* Second pass - create binary instructions */
     const char *delim = "\n";
     char *state;
-    char *token = strtok_r(buffer2, delim, &state);
+    char *token = strtok_r(buffer2, delim, &state), *tokencopy;
     state_t st = initState();
      
     int offset = 0;
@@ -111,7 +110,8 @@ int main(int argc, char **argv) {
     while (token != NULL) {
 		printf("%i %s\n", offset + 1, token);
 		/* Save token for printing at breakpoints */
-        source[offset] = token;
+		strcpy(tokencopy, token);
+        source[offset] = tokencopy;
 		uint32_t inst = convertInstruction(token, symbols, offset, st);
         memcpy(st.mem + (offset * 4), &inst, sizeof(uint32_t));
         token = strtok_r(NULL, delim, &state);
