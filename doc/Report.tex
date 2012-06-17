@@ -1,21 +1,141 @@
-\documentclass[a5=4paper,12pt]{article}
+\documentclass[11pt]{report}
+
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
 
 \begin{document}
 \setlength{\topmargin}{-1cm} %Was a bit bottom heavy in my opinon
-\title{IMPS Report}
-\author{Owen Davies, Daniel Hertz, Charlie Hothersall-Thomas}
+\title{The IMPS Debugger}
+\author{An extension to the IMPS system\\written by Owen Davies, Daniel Hertz and Charlie Hothersall-Thomas}
 \date{ \today}
 
 \maketitle
 \section*{The IMPS Debugger} %asterix stops enumerating sections
-The extension we decided to produce as an IMPS debugger, with as many useful functions as we could add in the timeframe given. The debugger has the capability to set breakpoints, print or edit registers and memory, and step line by line through a developers code. This is obviously useful for the assembly developer, as if the program has to act in a predictable manor under all circumstances, and out extension allows us to show the developer where they are having unexpected behaviour. \\ %newline
-\textbf{/*flow or state diagram goes here*/ }
-\subsection*{Design}      
-The design of the debugger is relatively simple as shown above - using functions shared with assemble and emulate, the debugger compiles the source to memory (instead of a file like assembler). The user can then input commands before running the program, such as breakpoints, or set a specific state of registers and memory. The program is then run to the first breakpoint, where a different interface is presented. The user can now print the state they are currently at, step through the next few lines of code, or set the registers again. This design is implemented using two separate while loops with switches for interfaces, and a loop that runs the program up to the breakpoint, then after it. One of the problems we discovered with this method was the data and skip commands, as we weren't sure how to act if the user set one as a breakpoint, and how to skip the correct number of bytes in memory. The first was a functionality question, and we decided to stop the program if the user did something this silly. The second required passing the state to the assembler, as it then has the location to zero out the number of bytes required.
+
+The IMPS debugger allows the user to debug an IMPS source file. It takes one 
+command line argument - the source file that the user wishes to debug. For 
+example, to debug the source file \textbf{example.s} one would need to write 
+the following command:
+\\[1ex]
+\texttt{\% ./debug example.s}
+\\[1ex]
+The debugger is a standalone tool, which shares methods from the IMPS emulator 
+and IMPS assembler. We created a seperate file, \textbf{utils.c}, which contains 
+shared methods for the emulator, assembler and our debugger.
+
+\subsection*{Example Usage}
+
+Once the program is started, the input file is read and a symbol table is 
+constructed. The source file is then assembled into IMPS binary. The user is 
+then presented with a prompt:
+\\[1ex]
+\texttt{\% ./debug example.s\\
+		Reading input file example.s...done.\\
+		Building symbol table...done.\\
+		Welcome to the IMPS debugger. Type "h" or "help" for information on commands.}
+\\[1ex]
+From here the user can add breakpoints to halt execution at a certain line, set 
+the value of any of the 31 registers or any memory address, and start executing 
+the program with the \texttt{run} command.\\
+If no breakpoints are set, then the program will run through normally and exit, 
+as if it had been assembled and emulated normally. If one or more breakpoints 
+have been set, then the program will execute line by lnie until the first 
+breakpoint is hit. Say the user set a breakpoint at line 8:
+\\[1ex]
+\texttt{Breakpoint at line 8 reached. What do you want to do?}
+\\[1ex]
+Now the program has reached a breakpoint, the user can move to the next line, 
+continue to the next breakpoint (or to the end of the program if there are no 
+more breakpoints), or print or set the values of registers and memory 
+addressses.
+\newpage
+The following flow diagram shows the basic run-down of the debugger:
+
+\begin{center}
+	% Define block styles
+	\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
+		text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+	\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+		text width=5em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{line} = [draw, -latex']
+		
+	\begin{tikzpicture}[scale=0.40, node distance = 2cm, auto]
+		\node [block] (start) {Build symbol table and assemble};
+		\node [block, below of=start] (break) {Set breakpoints};
+		\node [block, below of=break] (execute) {Emulate line};
+		\node [decision, below of=execute] (halt) {Have we reached halt?};
+		\node [block, left of=execute, node distance=3cm] (next) {Next line};
+		\node [block, below of=halt, node distance=3cm] (stop) {Stop Execution};
+		
+		\path [line] (start) -- (break);
+		\path [line] (break) -- (execute);
+		\path [line] (execute) -- (halt);
+		\path [line] (halt) -| node {no}(next);
+		\path [line] (next) -- (execute);
+		\path [line] (halt) -- node {yes}(stop);
+	\end{tikzpicture}
+\end{center}
+
+\subsection*{Table of Commands}
+
+The table below lists all the commands available in the debugger, as well as the 
+command number that assosiates the command with its short version (using a data 
+structure to map the command and its short version to the same command number), 
+and a short description of what the command does.
+\begin{center}
+	\begin{tabular}{ | l | c | c | p{5cm} |}
+	\hline
+	Command & Number & Short Version & Description \\ \hline
+	quit & 0 & q & Halt the execution and exit the program \\ \hline
+	break $<$line$>$ & 1 & b $<$line$>$ & Set a breakpoint at line $<$line$>$ \\ \hline
+	run & 2 & r & Start running the program \\ \hline
+	next & 3 & n & Execute the next line of code \\ \hline
+	continue & 4 & c & Continue execution to the next break point \\ \hline
+	print & 5 & p & Print the contents of all registers \\ \hline
+	help & 6 & h & Print the descriptions in this table \\ \hline
+	setReg $<$regno$>$ $<$value$>$ & 7 & sR & Set the value of \$$<$regno$>$ to $<$value$>$ \\ \hline
+	setAddr $<$addr$>$ $<$value$>$ & 8 & sA & Set the value of mem[$<$regno$>$] to $<$value$>$ \\ \hline
+	printReg $<$regno$>$ & 7 & pR & Print the value of \$$<$regno$>$ \\ \hline
+	printAddr $<$addr$>$ & 8 & pA & Print the value of mem[$<$regno$>$] \\ \hline
+	\end{tabular}
+\end{center}
+
 \subsection*{Testing}
+
 The debugger was tested rigorously and thoroughly by Owen. It works.
+
 \section*{Programming in a Group}
+
 \begin{center}\textit{Producing a software suite for an imaginary language has never been so for-filling.} \end{center}
-Programming in the group has been a good experience for all of us, as we have learnt equal parts group coding skills and C. We mainly divided up by doing what we were interested in, but always checking and making edits to everyone else's work, so the whole group knew the progress that had been made. One of the major learning points for one of the group members was the use of git, which he was very sceptical about in the beginning, as he didn't really understand the use case. The other two members have now taught the importance of version control, but admit that we were not doing it quite right. We had a shared repository, on which we all had our own branches and pushed and pulled from, and the master was holy, and only to be touched if we are sure. This is an antiquated model of Subversion. We learnt were git really excels -  its distributed model. If we each had our own repository, each with our master, then we could branch of and do some experimental work on our own and merge it into out master branch. If then the rest of the group members wanted by change, and we agreed it was good, then they would pull from the individuals repo. This makes git much more powerful and easier to use, with nicer merges. Our methods communication went through a number of iterations, first it was mostly in-person, but either someone would be left out of the loop, or if we were programming, have not much to do. We then decided to split up tasks a bit more, and two of us pair-programming on a larger project, while in parallel the other was working on something related. This worked for some time, but as we came under more time pressure, the natural thing came to us. Facebook group chat, each working in parallel on something different, and then everyone checking each others work. This way, everyone knew what everyone else was doing and we could quickly ask any questions about the design or methodology the others were happy to use. Another powerful tool we used was gitHub to track our commits. This means whenever we happen to meet, the code is available to us online, and we could discuss changes or possible design considerations, as well as seeing easy 'diffs' of commits.\\
+Programming in the group has been a good experience for all of us, as we have 
+learnt equal parts group coding skills and C. We mainly divided up by doing 
+what we were interested in, but always checking and making edits to everyone 
+else's work, so the whole group knew the progress that had been made. One of 
+the major learning points for one of the group members was the use of git, which 
+he was very sceptical about in the beginning, as he didn't really understand the 
+use case. The other two members have now taught the importance of version 
+control, but admit that we were not doing it quite right. We had a shared 
+repository, on which we all had our own branches and pushed and pulled from, 
+and the master was holy, and only to be touched if we are sure. This is an 
+antiquated model of Subversion. We learnt were git really excels -  its 
+distributed model. If we each had our own repository, each with our master, 
+then we could branch of and do some experimental work on our own and merge it 
+into out master branch. If then the rest of the group members wanted by change, 
+and we agreed it was good, then they would pull from the individuals repo. This 
+makes git much more powerful and easier to use, with nicer merges. Our methods 
+communication went through a number of iterations, first it was mostly 
+in-person, but either someone would be left out of the loop, or if we were 
+programming, have not much to do. We then decided to split up tasks a bit more, 
+and two of us pair-programming on a larger project, while in parallel the other 
+was working on something related. This worked for some time, but as we came 
+under more time pressure, the natural thing came to us. Facebook group chat, 
+each working in parallel on something different, and then everyone checking each 
+others work. This way, everyone knew what everyone else was doing and we could 
+quickly ask any questions about the design or methodology the others were happy 
+to use. Another powerful tool we used was gitHub to track our commits. This 
+means whenever we happen to meet, the code is available to us online, and we 
+could discuss changes or possible design considerations, as well as seeing easy 
+'diffs' of commits.\\
 All in all we have really enjoyed working together and it has made us better people for it. Now I can't wait for summer!
 \end{document}
