@@ -96,16 +96,18 @@ int main(int argc, char **argv) {
     int offset = 0;
     int emptylines = 0;
     int emptylinenos[emptylines];
+	
     /* Fill assembled with the binary instructions */
     char **source = malloc(size * sizeof(char));
     if (source == NULL) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
+	
     while (token != NULL) {
+		/* Save token for printing at breakpoints */
         source[offset] = token;
-        /*trying to save source to print later…*/
-		uint32_t inst = convertInstruction(token, symbols, offset);
+		uint32_t inst = convertInstruction(token, symbols, offset, st);
         memcpy(st.mem + (offset * 4), &inst, sizeof(uint32_t));
         token = strtok_r(NULL, delim, &state);
         offset++;
@@ -113,7 +115,7 @@ int main(int argc, char **argv) {
             /* Jump over lines with just newlines (or other ctrl characters) */
             if (strcmp(token, "\r") <= 0) {
                 token = strtok_r(NULL, delim, &state);
-                /*Empty line hack*/
+                /* Track empty lines for correct line numbering later */
                 emptylinenos[emptylines] = offset + 1;
                 emptylines++;
             }
@@ -139,6 +141,7 @@ int main(int argc, char **argv) {
     bool running = false;
     int line, regno, value, addr;
     char *rest, *addrString, *end;
+	
     /* Pre-run menu loop, for setting breakpoints */
     while (!running) {
         /* cmd = the whole input line */
@@ -151,12 +154,12 @@ int main(int argc, char **argv) {
         
         switch (cmdCode) {
             case 0:
-            /* quit - q */
+				/* quit - q */
 				printf("Qutting...\n");
 				exit(EXIT_SUCCESS);
 				break;
             case 1:
-            /* break - b */
+				/* break - b */
                 line = atoi(strtok_r(NULL, " ", &rest));
                 int i = 0;
                 while (emptylinenos[i] < line) {
@@ -167,11 +170,11 @@ int main(int argc, char **argv) {
 				printf("\nBreakpoint set at line %i.\n", line);
 				break;
             case 2:
-            /* run - r */
+				/* run - r */
                 running = true;
 				break;
             case 6:
-            /* help - h */
+				/* help - h */
                 showHelp();
 				break;
             case 7:
@@ -207,7 +210,7 @@ int main(int argc, char **argv) {
 				printf("\nBreakpoint at line %i reached. What do you want to do?\n", breakpt);
 				
 				while(!cont) {
-					printf("%i. %s\n", linecount, source[linecount]);
+					printf("%i. %s\n", linecount, source[linecount - 1]);
 					
 					char cmd[MAX_COMMAND_LENGTH];
 					readCommand(cmd, sizeof(cmd));
@@ -233,6 +236,7 @@ int main(int argc, char **argv) {
 						case 5:
 							/* print - p */
 							printReg(st);
+							printf("hello");
 							break;
 						case 6:
 							/* help - h */
@@ -243,6 +247,7 @@ int main(int argc, char **argv) {
 							regno = atoi(strtok_r(NULL, " ", &rest));
 							value = atoi(strtok_r(NULL, " ", &rest));
 							st.reg[regno] = value;
+							printf("$%i set to %i\n", regno, value);
 							break;
 						case 8:
 							/* setAddress - sA */
@@ -250,17 +255,18 @@ int main(int argc, char **argv) {
 							addr = strtol(addrString, &end, 16);
 							value = atoi(strtok_r(NULL, " ", &rest));
 							st.mem[addr] = value;
+							printf("mem[%i] set to %i\n", regno, value);
 							break;
 						case 9:
 							/* printRegister - pR */
 							regno = atoi(strtok_r(NULL, " ", &rest));
-							printf("Register %i's value is %i", regno, st.reg[regno]);
+							printf("$%i = %i\n", regno, st.reg[regno]);
 							break;
 						case 10:
 							/* printAddress - pA */
 							addrString = strtok_r(NULL, " ", &rest);
 							addr = strtol(addrString, &end, 16);
-							printf("Address %i's value is %i", addr, st.mem[addr]);
+							printf("mem[%i] = %i\n", addr, st.mem[addr]);
 							break;
 						default:
 							printf("Invalid command - %s.\n", cmdStr);

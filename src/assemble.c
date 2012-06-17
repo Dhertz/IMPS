@@ -47,9 +47,10 @@ int main(int argc, char **argv) {
     char *state;
     char *token = strtok_r(buffer2, delim, &state);
     int offset = 0;
+	state_t st = initState();
     
     while (token != NULL) {
-        uint32_t inst = convertInstruction(token, symbols, offset);
+        uint32_t inst = convertInstruction(token, symbols, offset, st);
         
 		fwrite(&inst, 4, 1, out);
 		
