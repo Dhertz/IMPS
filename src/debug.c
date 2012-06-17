@@ -11,14 +11,14 @@
 /*
  * TODO:
  *
- * 1. Free st.mem somewhere
- * 2. Come up with better halt solution than exit(0) in utils.c:268
+ * 1. Come up with better halt solution than exit(0) in utils.c:268
  *    Frees need to be accounted for (remember it's not just used by debugger)
- * 3. Static method for adding commands that takes long and short arguments
- * 4. Write showHelp
- * 5. Remove debug line on 169 of utils.c
- * 6. Dan's empty line hack?
- * 7. Fix break command I/O, reads 0 on Mac, sometimes reads negative number in DoC
+ * 2. Static method for adding commands that takes long and short arguments
+ * 3. Write showHelp
+ * 4. Detect empty lines properly. strtok removes them anyways because "\n" is our delimiter,
+ *    but we need to know where they are so that the human argument to break can be mapped to
+ *    an assembler line number 
+ * 5. Breakpoint doesn't output full line, because it points to the strings, which are mangled somewhere
  */
 
 void readCommand(char buffer[], int size) {
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
     buffer2 = malloc(size * 4);
     memcpy(buffer2, buffer, size);
     
-	printf("Building symbol table...");
+	printf("Building symbol table... ");
 	
     /* First pass - fill symbol table with labels -> offsets */
     table symbols;
@@ -108,8 +108,6 @@ int main(int argc, char **argv) {
     state_t st = initState();
      
     int offset = 0;
-    int emptylines = 0;
-    int emptylinenos[emptylines];
 	
     /* Fill assembled with the binary instructions */
     char **source = malloc(size * sizeof(char));
@@ -119,21 +117,13 @@ int main(int argc, char **argv) {
     }
 	
     while (token != NULL) {
+		printf("%i %s\n", offset + 1, token);
 		/* Save token for printing at breakpoints */
         source[offset] = token;
 		uint32_t inst = convertInstruction(token, symbols, offset, st);
         memcpy(st.mem + (offset * 4), &inst, sizeof(uint32_t));
         token = strtok_r(NULL, delim, &state);
         offset++;
-        if (token != NULL) {
-            /* Jump over lines with just newlines (or other ctrl characters) */
-            if (strcmp(token, "\r") <= 0) {
-                token = strtok_r(NULL, delim, &state);
-                /* Track empty lines for correct line numbering later */
-                emptylinenos[emptylines] = offset + 1;
-                emptylines++;
-            }
-        }
     }
     
 
@@ -174,10 +164,6 @@ int main(int argc, char **argv) {
             case 1:
 				/* break - b */
                 line = atoi(strtok_r(NULL, " ", &rest));
-                int i = 0;
-                while (emptylinenos[i] < line) {
-					line--;
-                }
                 breaks[breakCount] = line;
                 breakCount++;
 				printf("\nBreakpoint set at line %i.\n", line);
@@ -213,14 +199,9 @@ int main(int argc, char **argv) {
     while (st.halt == 0) {
         for (int i = 0; i < breakCount; i++) {
             if (linecount == breaks[i]) {
-				/*Hacky emptyline adding back in*/
-                int breakpt = line;
-                while (emptylinenos[i] < breakpt) {
-					breakpt++;
-                }
 				bool cont = false;
 				
-				printf("\nBreakpoint at line %i reached. What do you want to do?\n", breakpt);
+				printf("\nBreakpoint at line %i reached. What do you want to do?\n", line);
 				
 				while (!cont) {
 					printf("%i. %s\n", linecount, source[linecount - 1]);
@@ -296,6 +277,7 @@ int main(int argc, char **argv) {
     endDebugger:
 		free(breaks);
         free(source);
+		free(st.mem);
         freeTable(&symbols);
         free(buffer2);
         return EXIT_SUCCESS;

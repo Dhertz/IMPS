@@ -166,7 +166,6 @@ uint32_t convertInstruction(char *token, table symbols, int offset, state_t st) 
             return writeInstruction(mapped, vals);
         }
     }
-	fprintf(stderr, "Hmm"); /* TODO: remove this debug line */
 	return 0; /* Halt for unrecognised command. This should never be hit anyway. */
 }
 
