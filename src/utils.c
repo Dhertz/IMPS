@@ -18,12 +18,12 @@ void addMnemonics(table *t) {
                          "muli", "lw", "sw", "beq", "bne", "blt", "bgt",
                          "ble", "bge", "jmp", "jr", "jal", "out"};
                                 
-    for(int i = 0; i <= 18; i++) {
+    for (int i = 0; i <= 18; i++) {
         insertFront(t, mnemonics[i], i);
     }
 }
 
-int buildSymTable(table *symbols, FILE *in, long size, char* buffer) {
+int buildSymTable(table *symbols, FILE *in, long size, char *buffer) {
     /* First pass - fill symbol table with labels -> offsets */
     const char *delim = "\n";
     char *state;
@@ -166,6 +166,7 @@ uint32_t convertInstruction(char *token, table symbols, int offset, state_t st) 
             return writeInstruction(mapped, vals);
         }
     }
+	fprintf(stderr, "Hmm"); /* TODO: remove this debug line */
 	return 0; /* Halt for unrecognised command. This should never be hit anyway. */
 }
 
@@ -263,6 +264,7 @@ state_t executeInstruction(inst_t inst, state_t st) {
 			/* Halt */
 			printReg(st);
 			st.halt = 1;
+			// This isn't right, means appropriate free commands wont be executed:
 			exit(0);
 		} else if (opCode <= 18) {
 			/* I-type instructions */

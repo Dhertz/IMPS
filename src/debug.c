@@ -8,6 +8,19 @@
 
 #define MAX_COMMAND_LENGTH 30
 
+/*
+ * TODO:
+ *
+ * 1. Free st.mem somewhere
+ * 2. Come up with better halt solution than exit(0) in utils.c:268
+ *    Frees need to be accounted for (remember it's not just used by debugger)
+ * 3. Static method for adding commands that takes long and short arguments
+ * 4. Write showHelp
+ * 5. Remove debug line on 169 of utils.c
+ * 6. Dan's empty line hack?
+ * 7. Fix break command I/O, reads 0 on Mac, sometimes reads negative number in DoC
+ */
+
 void readCommand(char buffer[], int size) {
     fgets(buffer, size, stdin);
 	
@@ -57,7 +70,7 @@ int main(int argc, char **argv) {
     char *buffer;
     char *buffer2;
 
-	printf("Reading input file %s...", argv[1]);
+	printf("Reading input file %s... ", argv[1]);
 	
     /* Open and read from input file */
     if ((in = fopen(argv[1], "rb")) == NULL) {
@@ -71,8 +84,9 @@ int main(int argc, char **argv) {
 
     buffer = malloc(size * 4);
     fread(buffer, 4, size, in);
+	fclose(in);
 	printf("done.\n");
-	
+
     /* Create copy of buffer for use in second pass */
     buffer2 = malloc(size * 4);
     memcpy(buffer2, buffer, size);
@@ -155,9 +169,8 @@ int main(int argc, char **argv) {
         switch (cmdCode) {
             case 0:
 				/* quit - q */
-				printf("Qutting...\n");
-				exit(EXIT_SUCCESS);
-				break;
+				printf("Quitting...\n");
+				goto endDebugger;
             case 1:
 				/* break - b */
                 line = atoi(strtok_r(NULL, " ", &rest));
@@ -198,8 +211,8 @@ int main(int argc, char **argv) {
     /* START EMULATING */
     int linecount = 1;
     while (st.halt == 0) {
-        for(int i = 0; i < breakCount; i++) {
-            if(linecount == breaks[i]) {
+        for (int i = 0; i < breakCount; i++) {
+            if (linecount == breaks[i]) {
 				/*Hacky emptyline adding back in*/
                 int breakpt = line;
                 while (emptylinenos[i] < breakpt) {
@@ -209,7 +222,7 @@ int main(int argc, char **argv) {
 				
 				printf("\nBreakpoint at line %i reached. What do you want to do?\n", breakpt);
 				
-				while(!cont) {
+				while (!cont) {
 					printf("%i. %s\n", linecount, source[linecount - 1]);
 					
 					char cmd[MAX_COMMAND_LENGTH];
@@ -221,9 +234,8 @@ int main(int argc, char **argv) {
 					switch (cmdCode) {
 						case 0:
 							/* quit - q */
-							printf("Qutting...\n");
-							exit(EXIT_SUCCESS);
-							break;
+							printf("Quitting...\n");
+							goto endDebugger;q
 						case 3:
 							/* next - n */
 							st = executeInstruction(readUint32(st.pc, st), st);
@@ -236,7 +248,6 @@ int main(int argc, char **argv) {
 						case 5:
 							/* print - p */
 							printReg(st);
-							printf("hello");
 							break;
 						case 6:
 							/* help - h */
@@ -281,11 +292,11 @@ int main(int argc, char **argv) {
     /*
     END DEBUGGER
     */
-    
-    
-    freeTable(&symbols);
-    free(source);
-    fclose(in);
-    free(buffer2);
-    return EXIT_SUCCESS;
+
+    endDebugger:
+		free(breaks);
+        free(source);
+        freeTable(&symbols);
+        free(buffer2);
+        return EXIT_SUCCESS;
 }
