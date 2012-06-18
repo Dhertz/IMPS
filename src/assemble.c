@@ -50,9 +50,22 @@ int main(int argc, char **argv) {
 	state_t st = initState();
     
     while (token != NULL) {
-        uint32_t inst = convertInstruction(token, symbols, offset, st);
+		if (strstr(token, ".skip") != NULL) {
+			char *tokstate;
+			strtok_r(token, " ", &tokstate);
+			int length = atoi(strtok_r(NULL, " ", &tokstate));
+			if (length == 0) {
+				length = atoi(strtok_r(NULL, " ", &tokstate));
+			}
+			printf("%i\n", length);
+			uint32_t x[length];
+			memset(x, 0, length*4);
+			fwrite(&x, 4, length, out);
+		} else {
+			uint32_t inst = convertInstruction(token, symbols, offset, st);
+			fwrite(&inst, 4, 1, out);
+		}
         
-		fwrite(&inst, 4, 1, out);
 		
         token = strtok_r(NULL, delim, &state);
         offset++;
