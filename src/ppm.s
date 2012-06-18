@@ -35,15 +35,58 @@ maxValue:    lw $1 $0 two
 
              addi $1 $0 255   - $1 = 255
              addi $2 $0 0     - $2 = 0
-             addi $3 $0 32    - $3 = 32
+             addi $3 $0 32     - $3 = 32
+             addi $5 $0 4    - $5 = 4
 
 twoRows:     addi $4 $0 0     - $4 = 0
 whiteBlack:  out $1
              out $1
-             out $1           - Output white pixel
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1           - Output 8 white pixels (loop later)
              out $0
              out $0
-             out $0           - Output black pixel
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0           - Output 8 black pixels (loop later)
              addi $4 $4 1     - $4++
              beq $4 $3 2      - Skip if row finished,
              jmp whiteBlack   -   otherwise loop
@@ -51,15 +94,57 @@ whiteBlack:  out $1
              addi $4 $0 0     - $4 = 0
 blackWhite:  out $0
              out $0
-             out $0           - Output black pixel
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0
+             out $0           - Output 8 black pixels (loop later)
              out $1
              out $1
-             out $1           - Output white pixel
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1
+             out $1           - Output 8 white pixels (loop later)
              addi $4 $4 1     - $4++
              beq $4 $3 2      - Skip if row finished,
              jmp blackWhite   -   otherwise loop
 
              addi $2 $2 1     - $2++
-             beq $2 $3 2      - Skip if image finished,
+             beq $2 $5 2      - Skip if image finished,
              jmp twoRows      -   otherwise loop
              halt
