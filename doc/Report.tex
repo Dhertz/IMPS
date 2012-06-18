@@ -73,7 +73,7 @@ The following flow diagram shows the basic run-down of the debugger:
 		\node [decision, below of=halt, node distance=4cm] (breakpoint) {Have we reached a breakpoint?};
 		\node [block, left of=halt, node distance=3cm] (next) {Next line};
 		\node [block, right of=halt, node distance=3.5cm, fill=red!20] (stop) {Stop Execution};
-		\node [decision, below of=breakpoint, node distance=4cm] (CLI) {Command line Interface};
+		\node [decision, below of=breakpoint, node distance=4cm] (CLI) {Command Line Interface};
 		\node [block, left of=breakpoint, node distance=6cm] (step) {Set Break for next line};
 		%\node [block, right of=CLI, node distance=6cm] (print) {Print registers or Address};
 		\path [line] (start) -- (break);
@@ -120,7 +120,7 @@ The table below lists all the of commands available in the debugger and a short 
 \subsection*{Testing}
 
 Testing of the debugger was ongoing throughout development, using carefully-written
-source files to cover every possible edge case, whilst ensuring that the debugger
+source files to cover every concievable edge case, whilst ensuring that the debugger
 always behaved as expected and that any outputted values were correct. The GNU
 Project Debugger, \textbf{gdb}, also proved useful during development. This allowed
 us to use the stack trace to quickly locate and correct problems as they were
@@ -145,11 +145,13 @@ three members of the group had no prior experience of collaborative programming,
 but it worked well and we each feel that our teamwork and communication skills
 are better as a result.
 \\[2ex]
-The work was divided as equally as possible, delegating each task to the team
-member who was most interested in completing it where possible. It was important
-that every one knew about progress made by the remainder of the group, so we
-constantly checked each other's work throughout the process, suggesting
-alterations and improvements where possible.
+The work was divided roughly equally,  we did our best to delegate each task to the team
+member who was most interested in completing it, but this was not always possible. It 
+was important that every one knew about progress made by the remainder of the group, so we
+consistently checked each other's work throughout the process, suggesting
+alterations and improvements where possible. We also tried to make sure all large design
+issues were discussed as a group, to make sure the most appropriate decision was
+made, including the file structure and algorithms used. 
 \\[2ex]
 The group project was also a good exercise in version control, using git to make
 it easier to track and combine every one's work. We later realised that we
@@ -159,8 +161,8 @@ only after discussing the commit with the entire group. This is an antiquated
 model of Subversion. git really excels with its distributed model - if we each
 had our own repository (with its own master branch) then we could branch out for
 some solo experimental work, merge into our individual master branch, and then
-if the rest of the group agreed with the work, it could be pulled into one central
-repository. This makes git much more powerful and easier to use, with nicer merges.
+if the rest of the group agreed with the work, it could be pulled into the others' repositories 
+and merged. This makes git much more powerful and easier to use, with nicer merges.
 
 \newpage
 
