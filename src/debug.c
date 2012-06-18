@@ -8,13 +8,6 @@
 
 #define MAX_COMMAND_LENGTH 30
 
-/*
- * TODO:
- *
- * 1. Write showHelp
- * 2. Command for printing PC? (What about setting?)
- */
-
 void readCommand(char buffer[], int size) {
     fgets(buffer, size, stdin);
     
