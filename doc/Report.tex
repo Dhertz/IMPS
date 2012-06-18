@@ -6,22 +6,23 @@
 \usepackage{chngpage}
 
 \begin{document}
-\setlength{\topmargin}{-1cm} %Was a bit bottom heavy in my opinon
+\setlength{\topmargin}{-1cm}
+\setlength{\parindent}{0in}
 
 \title{The IMPS Debugger}
 \author{An extension to the IMPS system\\written by Owen Davies, Daniel Hertz and Charlie Hothersall-Thomas}
 \date{ \today}
 
 \maketitle
-\section*{The IMPS Debugger} %asterix stops enumerating sections
+\section*{The IMPS Debugger}
 
 The IMPS debugger allows the user to debug an IMPS source file. It takes one 
 command line argument - the source file that the user wishes to debug. For 
 example, to debug the source file \textbf{example.s} one would need to write 
 the following command:
-\\[1ex]
+\\[2ex]
 \texttt{\% ./debug example.s}
-\\[1ex]
+\\[2ex]
 The debugger is a standalone tool, which shares methods from the IMPS emulator 
 and IMPS assembler. We created a seperate file, \textbf{utils.c}, which contains 
 shared methods for the emulator, assembler and our debugger.
@@ -31,27 +32,29 @@ shared methods for the emulator, assembler and our debugger.
 Once the program is started, the input file is read and a symbol table is 
 constructed. The source file is then assembled into IMPS binary. The user is 
 then presented with a prompt:
-\\[1ex]
+\\[2ex]
 \texttt{\% ./debug example.s\\
-		Reading input file example.s...done.\\
-		Building symbol table...done.\\
+		Reading input file example.s... done.\\
+		Building symbol table... done.\\
 		Welcome to the IMPS debugger. Type "h" or "help" for information on commands.}
-\\[1ex]
+\\[2ex]
 From here the user can add breakpoints to halt execution at a certain line, set 
-the value of any of the 31 registers or any memory address, and start executing 
-the program with the \texttt{run} command.\\
-If no breakpoints are set, then the program will run through normally and exit, 
-as if it had been assembled and emulated normally. If one or more breakpoints 
-have been set, then the program will execute line by lnie until the first 
-breakpoint is hit. Say the user set a breakpoint at line 8:
-\\[1ex]
+the value of any of the 32 registers or any memory address, and start executing 
+the program with the \texttt{run} command. If no breakpoints are set, then the
+program will run through normally and exit, as if it had been assembled and
+emulated normally. If one or more breakpoints have been set, then the program
+will execute line by line until the first breakpoint is hit. Say the user set a
+breakpoint at line 8:
+\\[2ex]
 \texttt{Breakpoint at line 8 reached. What do you want to do?}
-\\[1ex]
+\\[2ex]
 Now the program has reached a breakpoint, the user can move to the next line, 
 continue to the next breakpoint (or to the end of the program if there are no 
 more breakpoints), or print or set the values of registers and memory 
 addressses.
+
 \newpage
+
 The following flow diagram shows the basic run-down of the debugger:
 
 \begin{center}
@@ -92,72 +95,80 @@ The following flow diagram shows the basic run-down of the debugger:
 
 \subsection*{Table of Commands}
 
-The table below lists all the commands available in the debugger, as well as the 
-command number that assosiates the command with its short version (using a data 
-structure to map the command and its short version to the same command number), 
-and a short description of what the command does.
-\\
+The table below lists all the of commands available in the debugger and a short description of what each command does.\\
+
 \begin{adjustwidth}{-.5in}{-.5in} 
 	\begin{center} 
-	\begin{tabular}{ | l | c | c | p{5cm} |}
+	\begin{tabular}{ | l | c | p{5cm} |}
 	\hline
-	Command & Number & Short & Description \\ \hline
-	quit & 0 & q & Halt the execution and exit the program \\ \hline
-	break $<$line$>$ & 1 & b $<$line$>$ & Set a breakpoint at line $<$line$>$ \\ \hline
-	run & 2 & r & Start running the program \\ \hline
-	next & 3 & n & Execute the next line of code \\ \hline
-	continue & 4 & c & Continue execution to the next break point \\ \hline
-	print & 5 & p & Print the contents of all registers \\ \hline
-	help & 6 & h & Print the descriptions in this table \\ \hline
-	setReg $<$regno$>$ $<$value$>$ & 7 & sR & Set the value of \$$<$regno$>$ to $<$value$>$ \\ \hline
-	setAddr $<$addr$>$ $<$value$>$ & 8 & sA & Set the value of mem[$<$addr$>$] to $<$value$>$ \\ \hline
-	printReg $<$regno$>$ & 7 & pR & Print the value of \$$<$regno$>$ \\ \hline
-	printAddr $<$addr$>$ & 8 & pA & Print the value of mem[$<$addr$>$] \\ \hline
+	Command & Short & Description \\ \hline
+	quit & q & Halt the execution and exit the program \\ \hline
+	break $<$line$>$ & b $<$line$>$ & Set a breakpoint at line $<$line$>$ \\ \hline
+	run & r & Start running the program \\ \hline
+	next & n & Execute the next line of code \\ \hline
+	continue & c & Continue execution to the next break point \\ \hline
+	print & p & Print the program counter and contents of all registers \\ \hline
+	help & h & Print the list of supported debugger commands \\ \hline
+	setReg $<$regno$>$ $<$value$>$ & sR & Set the value of \$$<$regno$>$ to $<$value$>$ \\ \hline
+	setAddr $<$addr$>$ $<$value$>$ & sA & Set the value of mem[$<$addr$>$] to $<$value$>$ \\ \hline
+	printReg $<$regno$>$ & pR & Print the value of \$$<$regno$>$ \\ \hline
+	printAddr $<$addr$>$ & pA & Print the value of mem[$<$addr$>$] \\ \hline
 	\end{tabular}
 	\end{center}
 \end{adjustwidth}
 
 \subsection*{Testing}
 
-The debugger was tested while we were making it by successfully printing out states that we knew to be correct. 
-This helped us quickly locate and correct unexpected behaviour when we experienced it, instead of trawling through 
-lines of code. On occasion the gnome debugger was used, and debug-ception occurred. This enabled us to quickly 
-locate where our code was failing, as we could look at the stack and line number calls. GDB was thusly used
-for inspiration in the design of our CLI and what commands should be included in the IMPS debugger. When 
-the program was completed all 4 of the assembly files were used to test every function of the debugger, confirming
-each feature was operational and there was no unexpected behaviour.
+Testing of the debugger was ongoing throughout development, using carefully-written
+source files to cover every possible edge case, whilst ensuring that the debugger
+always behaved as expected and that any outputted values were correct. The GNU
+Project Debugger, \textbf{gdb}, also proved useful during development. This allowed
+us to use the stack trace to quickly locate and correct problems as they were
+experienced, rather than having to search through our source code. We also used
+gdb's interface as inspiration when designing the CLI for our debugger.
+
+\newpage
+
+The primary problem encountered when writing the debugger was caused by empty
+lines in source files. These are discarded by the assembler, yet when the user
+inputs a line number to set a breakpoint, the empty lines in the original source
+file still need to be considered when determining where to set the breakpoint.
+Our solution to this was to scan through the source file looking for blank lines,
+generating a map (stored as an array) of assembly line numbers to 'human' line
+numbers.
 
 \section*{Programming in a Group}
 
-\begin{center}\textit{Producing a software suite for an imaginary language has never been so fulfilling.} \end{center}
-Programming in the group has been a good experience for all of us, as we have 
-learnt equal parts group coding skills and C. We mainly divided up by doing 
-what we were interested in, but always checking and making edits to everyone 
-else's work, so the whole group knew the progress that had been made. One of 
-the major learning points for one of the group members was the use of git, which 
-he was very sceptical about in the beginning, as he didn't really understand the 
-use case. The other two members have now taught the importance of version 
-control, but admit that we were not doing it quite right. We had a shared 
-repository, on which we all had our own branches and pushed and pulled from, 
-and the master was holy, and only to be touched if we are sure. This is an 
-antiquated model of Subversion. We learnt where git really excels -  its 
-distributed model. If we each had our own repository, each with our master, 
-then we could branch of and do some experimental work on our own and merge it 
-into out master branch. If then the rest of the group members wanted by change, 
-and we agreed it was good, then they would pull from the individuals repo. This 
-makes git much more powerful and easier to use, with nicer merges. Our methods 
-communication went through a number of iterations, first it was mostly 
-in-person, but either someone would be left out of the loop, or if we were 
-programming, have not much to do. We then decided to split up tasks a bit more, 
-and two of us pair-programming on a larger project, while in parallel the other 
-was working on something related. This worked for some time, but as we came 
-under more time pressure, the natural thing came to us. Facebook group chat, 
-each working in parallel on something different, and then everyone checking each 
-others work. This way, everyone knew what everyone else was doing and we could 
-quickly ask any questions about the design or methodology the others were happy 
-to use. Another powerful tool we used was gitHub to track our commits. This 
-means whenever we happen to meet, the code is available to us online, and we 
-could discuss changes or possible design considerations, as well as seeing easy 
-'diffs' of commits.\\
-All in all we have really enjoyed working together and it has made us better people for it. Now I can't wait for summer!
+Group programming has been a fulfilling experience for us, as we have each
+improved our group work skills whilst also becoming more proficient in C. All
+three members of the group had no prior experience of collaborative programming,
+but it worked well and we each feel that our teamwork and communication skills
+are better as a result.
+\\[2ex]
+The work was divided as equally as possible, delegating each task to the team
+member who was most interested in completing it where possible. It was important
+that every one knew about progress made by the remainder of the group, so we
+constantly checked each other's work throughout the process, suggesting
+alterations and improvements where possible.
+\\[2ex]
+The group project was also a good exercise in version control, using git to make
+it easier to track and combine every one's work. We later realised that we
+weren't quite using git correctly, although we have learned for next time. We
+had a shared repository and each had our own branch, using the master branch
+only after discussing the commit with the entire group. This is an antiquated
+model of Subversion. git really excels with its distributed model - if we each
+had our own repository (with its own master branch) then we could branch out for
+some solo experimental work, merge into our individual master branch, and then
+if the rest of the group agreed with the work, it could be pulled into one central
+repository. This makes git much more powerful and easier to use, with nicer merges.
+
+\newpage
+
+To start with, we communicated primarily in person and worked individually, but
+we soon realised that this was not the most efficient way, as people were either
+being left out of the loop or with not enough work to do. We therefore decided to
+split up tasks into smaller chunks, and introduced pair-programming on the larger
+tasks while the other group member worked on something else. We found this new
+system to be much more efficient, with the bonus that everybody knew what the
+others were working on at any given time.
 \end{document}
