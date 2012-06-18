@@ -3,9 +3,11 @@
 \usepackage[latin1]{inputenc}
 \usepackage{tikz}
 \usetikzlibrary{shapes,arrows}
+\usepackage{chngpage}
 
 \begin{document}
 \setlength{\topmargin}{-1cm} %Was a bit bottom heavy in my opinon
+
 \title{The IMPS Debugger}
 \author{An extension to the IMPS system\\written by Owen Davies, Daniel Hertz and Charlie Hothersall-Thomas}
 \date{ \today}
@@ -54,9 +56,9 @@ The following flow diagram shows the basic run-down of the debugger:
 
 \begin{center}
 	% Define block styles
-	\tikzstyle{decision} = [diamond, draw, fill=blue!20, 
+	\tikzstyle{decision} = [diamond, draw, fill=white!20, 
 		text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
-	\tikzstyle{block} = [rectangle, draw, fill=blue!20, 
+	\tikzstyle{block} = [rectangle, draw, fill=white!20, 
 		text width=5em, text centered, rounded corners, minimum height=4em]
 	\tikzstyle{line} = [draw, -latex']
 		
@@ -65,15 +67,26 @@ The following flow diagram shows the basic run-down of the debugger:
 		\node [block, below of=start] (break) {Set breakpoints};
 		\node [block, below of=break] (execute) {Emulate line};
 		\node [decision, below of=execute] (halt) {Have we reached halt?};
-		\node [block, left of=execute, node distance=3cm] (next) {Next line};
-		\node [block, below of=halt, node distance=3cm] (stop) {Stop Execution};
-		
+		\node [decision, below of=halt, node distance=4cm] (breakpoint) {Have we reached a breakpoint?};
+		\node [block, left of=halt, node distance=3cm] (next) {Next line};
+		\node [block, right of=halt, node distance=3.5cm, fill=red!20] (stop) {Stop Execution};
+		\node [decision, below of=breakpoint, node distance=4cm] (CLI) {Command line Interface};
+		\node [block, left of=breakpoint, node distance=6cm] (step) {Set Break for next line};
+		%\node [block, right of=CLI, node distance=6cm] (print) {Print registers or Address};
 		\path [line] (start) -- (break);
 		\path [line] (break) -- (execute);
 		\path [line] (execute) -- (halt);
-		\path [line] (halt) -| node {no}(next);
-		\path [line] (next) -- (execute);
+		\path [line] (halt) -- node {no}(breakpoint);
+		\path [line] (next) |- (execute);
 		\path [line] (halt) -- node {yes}(stop);
+		\path [line] (breakpoint) -| node {no}(next);
+		\path [line] (CLI) -| node [above of=CLI, left] {Continue}(next);
+		\path [line] (CLI) -| node {Step}(step);
+		\path [line] (step) |- (next);
+		\path [line] (breakpoint) -- node {yes}(CLI);
+		\path [line] (CLI) -| node [above of=CLI, left] {Quit}(stop);
+		%\path [line] (CLI) -- node [near end] {Print}(print);
+		%\path [line] (print) |- (CLI.north);
 	\end{tikzpicture}
 \end{center}
 
@@ -83,10 +96,12 @@ The table below lists all the commands available in the debugger, as well as the
 command number that assosiates the command with its short version (using a data 
 structure to map the command and its short version to the same command number), 
 and a short description of what the command does.
-\begin{center}
+\\
+\begin{adjustwidth}{-.5in}{-.5in} 
+	\begin{center} 
 	\begin{tabular}{ | l | c | c | p{5cm} |}
 	\hline
-	Command & Number & Short Version & Description \\ \hline
+	Command & Number & Short & Description \\ \hline
 	quit & 0 & q & Halt the execution and exit the program \\ \hline
 	break $<$line$>$ & 1 & b $<$line$>$ & Set a breakpoint at line $<$line$>$ \\ \hline
 	run & 2 & r & Start running the program \\ \hline
@@ -99,15 +114,22 @@ and a short description of what the command does.
 	printReg $<$regno$>$ & 7 & pR & Print the value of \$$<$regno$>$ \\ \hline
 	printAddr $<$addr$>$ & 8 & pA & Print the value of mem[$<$regno$>$] \\ \hline
 	\end{tabular}
-\end{center}
+	\end{center}
+\end{adjustwidth}
 
 \subsection*{Testing}
 
-The debugger was tested rigorously and thoroughly by Owen. It works.
+The debugger was tested while we were making it by successfully printing out states that we knew to be correct. 
+This helped us quickly locate and correct unexpected behaviour when we experienced it, instead of trawling through 
+lines of code. On occasion the gnome debugger was used, and debug-ception occurred. This enabled us to quickly 
+locate where our code was failing, as we could look at the stack and line number calls. GDB was thusly used
+for inspiration in the design of our CLI and what commands should be included in the IMPS debugger. When 
+the program was completed all 4 of the assembly files were used to test every function of the debugger, confirming
+each feature was operational and there was no unexpected behaviour.
 
 \section*{Programming in a Group}
 
-\begin{center}\textit{Producing a software suite for an imaginary language has never been so for-filling.} \end{center}
+\begin{center}\textit{Producing a software suite for an imaginary language has never been so fulfilling.} \end{center}
 Programming in the group has been a good experience for all of us, as we have 
 learnt equal parts group coding skills and C. We mainly divided up by doing 
 what we were interested in, but always checking and making edits to everyone 
