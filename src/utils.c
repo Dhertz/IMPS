@@ -29,7 +29,7 @@ int buildSymTable(table *symbols, FILE *in, long size, char *buffer) {
     char *state;
     char *token = strtok_r(buffer, delim, &state);
     int offset = 0;
-	int numLines = 0;
+    int numLines = 0;
     
     while (token != NULL) {
 		numLines++;
@@ -87,7 +87,7 @@ static int regConvert(char *reg) {
 }
 
 uint32_t convertInstruction(char *token, table symbols, int offset, state_t st) {
-	char *tokstate;
+    char *tokstate;
     char *opcode = strtok_r(token, " ", &tokstate);
     
     /* Jump over the label if there is one */
@@ -102,9 +102,8 @@ uint32_t convertInstruction(char *token, table symbols, int offset, state_t st) 
 		/* Set memory to 0 here (apart from first memory location which is 
 		   done on return) */
 		int size = atoi(strtok_r(NULL, " ", &tokstate));
-		
 		for (int i = 1; i < size; i++) {
-			memset(st.mem + ((offset * 4) + (4 * i)), 0, sizeof(uint32_t));
+			memset(st.mem + ((offset + i) * 4), 0, sizeof(uint32_t));
 		}
 		return 0;
     } else {

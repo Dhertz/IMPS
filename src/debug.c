@@ -18,12 +18,12 @@
 void readCommand(char buffer[], int size) {
     fgets(buffer, size, stdin);
     
-    int i = 0;
-    while (buffer[i] != '\0') {
-        if (buffer[i] == '\n') {
-            buffer[i] = '\0';
+    int letter = 0;
+    while (buffer[letter] != '\0') {
+        if (buffer[letter] == '\n') {
+            buffer[letter] = '\0';
         } else {
-            i++;
+            letter++;
         }
     }
 }
@@ -48,8 +48,8 @@ void addCommands(table *t) {
 }
 
 void showHelp() {
-    printf("IMPS Debugger commands:\n\n");
-    printf("quit (q): Halt the execution and exit the program\n");
+     printf("IMPS Debugger commands:\n\n");
+     printf("quit (q): Halt the execution and exit the program\n");
 	printf("break <line> (b <line>): Set a breakpoint at line <line>\n");
 	printf("run (r): Start running the program\n");
 	printf("continue (c): Continue execution to the next break point\n");
@@ -61,25 +61,24 @@ void showHelp() {
 	printf("printAddr <addr> (pA <addr>): Print the value of mem[<addr>]\n");
 }
 
-static bool _isEmptyLine(int line, int emptylinenos[], int emptyLines) {
-    int i;
-    for (i = 0; i < emptyLines; i++) {
-        if (emptylinenos[i] == line) return true;
+static bool _isEmptyLine(int line, int emptyLines[], int emptyLinesSize) {
+    for (int i = 0; i < emptyLinesSize; i++) {
+        if (emptyLines[i] == line) return true;
     }
     return false;
 }
 
-static int _mapLookup(int assLine, int lineNoMap[], int noLines) {
-    for (int i = 0; i < noLines; i++) {
+static int _mapLookup(int assLine, int lineNoMap[], int LineNoMapSize) {
+    for (int i = 0; i < LineNoMapSize; i++) {
         if (lineNoMap[i] == assLine) return i;
     }
-    return -1;
+    return EXIT_FAILURE;
 }
 
 int main(int argc, char **argv) {
     FILE *in;
     long size;
-    char *buffer, *origBuffer, *buffer2;
+    char *buffer, *bufferCopy1, *bufferCopy2;
 
     printf("Reading input file %s... ", argv[1]);
     
@@ -99,32 +98,29 @@ int main(int argc, char **argv) {
     printf("done.\n");
 
     /* Detect empty lines, needed for human to assembly line number conversion in breakpoints */
-    int emptylinenos[size];
-    int emptylines = 0, curline = 0;
+    int emptyLineNos[size];
+    int emptyLineNosSize = 0, curline = 0;
     bool prevEmpty = false;
 
-    origBuffer = buffer;
+    bufferCopy1 = buffer;
     while (*buffer != '\0') {
         if (*buffer == '\n') {
             curline++;
             if (prevEmpty) {
-                emptylinenos[emptylines] = curline;
-                emptylines++;
+                emptyLineNos[emptyLineNosSize] = curline;
+                emptyLineNosSize++;
             }
         }
         prevEmpty = *buffer == '\n';
         buffer++;
     }
-    buffer = origBuffer;
+    buffer = bufferCopy1;
 
     /* Create copies of buffer for use in second pass */
-    buffer2 = malloc(size * 4);
-    memcpy(buffer2, buffer, size);
-	buffer2[strlen(buffer)] = '\0';
-	
-	printf("%s\n", buffer);
-	printf("%s\n", buffer2);
-	
+    bufferCopy2 = malloc(size * 4);
+    memcpy(bufferCopy2, buffer, size);
+    bufferCopy2[strlen(buffer)] = '\0';
+    
     /* First pass - fill symbol table with labels -> offsets */
     printf("Building symbol table... ");
     table symbols;
@@ -137,26 +133,25 @@ int main(int argc, char **argv) {
     /* Second pass - create binary instructions */
     const char *delim = "\n";
     char *state;
-    char *token = strtok_r(buffer2, delim, &state);
+    char *token = strtok_r(bufferCopy2, delim, &state);
     state_t st = initState();
     
     /* Fill assembled with the binary instructions */
-    int offset = 0;
-    char **source = malloc(curline * sizeof(char*));
+    char **source = malloc(numLines * sizeof(char*));
     if (source == NULL) {
         perror("malloc");
         exit(EXIT_FAILURE);
     }
-
+    curline = 0;
     while (token != NULL) {
         /* Save token for printing at breakpoints */
         char *tokenCopy = malloc(strlen(token) * sizeof(char));
         strcpy(tokenCopy, token);
-        source[offset] = tokenCopy;
-        uint32_t inst = convertInstruction(token, symbols, offset, st);
-        memcpy(st.mem + (offset * 4), &inst, sizeof(uint32_t));
+        source[curline] = tokenCopy;
+        uint32_t inst = convertInstruction(token, symbols, curline, st);
+        memcpy(st.mem + (curline * 4), &inst, sizeof(uint32_t));
         token = strtok_r(NULL, delim, &state);
-        offset++;
+        curline++;
     }
 
     /*
@@ -179,11 +174,11 @@ int main(int argc, char **argv) {
 
     /* Initialise line number map used in human to assembly line conversion */
     char *rest, *addrString, *end;
-    int lineNoMap[curline + 1];
-    for (int i = 0; i < curline + 1; i++) {
+    int lineNoMap[numLines + 1];
+    for (int i = 0; i < numLines + 1; i++) {
         lineNoMap[i] = i;
         for (int j = 0; j <= i; j++) {
-            if (_isEmptyLine(j, emptylinenos, emptylines)) {
+            if (_isEmptyLine(j, emptyLineNos, emptyLineNosSize)) {
                 lineNoMap[i]--;
             }
         }
@@ -240,16 +235,16 @@ int main(int argc, char **argv) {
     }
     
     /* START EMULATING */
-    int linecount = 1;
+    curline = 1;
     while (st.halt == 0) {
         for (int i = 0; i < breakCount; i++) {
-            if (linecount == breaks[i]) {
+            if (curline == breaks[i]) {
                 bool cont = false;
                 
-                printf("\nBreakpoint at line %i reached. What do you want to do?\n", _mapLookup(linecount, lineNoMap, curline + 1));
+                printf("\nBreakpoint at line %i reached. What do you want to do?\n", _mapLookup(curline, lineNoMap, numLines + 1));
                 
                 while (!cont) {
-                    printf("%i. %s\n", _mapLookup(linecount, lineNoMap, curline + 1), source[linecount - 1]);
+                    printf("%i. %s\n", _mapLookup(curline, lineNoMap, numLines + 1), source[curline - 1]);
                     
                     char cmd[MAX_COMMAND_LENGTH];
                     readCommand(cmd, sizeof(cmd));
@@ -265,7 +260,7 @@ int main(int argc, char **argv) {
                         case 3:
                             /* next - n */
                             st = executeInstruction(readUint32(st.pc, st), st);
-                            linecount++;
+                            curline++;
                             if (st.halt == 1) goto endDebugger;
                             break;
                         case 4:
@@ -313,20 +308,20 @@ int main(int argc, char **argv) {
             }    
         }
         st = executeInstruction(readUint32(st.pc, st), st);
-        linecount++;
+        curline++;
     }
     
     /*
     END DEBUGGER
     */
     endDebugger:
-        for (int i = 0; i < offset; i++) {
+        for (int i = 0; i < numLines; i++) {
             free(source[i]);
         }
         free(breaks);
         free(source);
         free(st.mem);
         freeTable(&symbols);
-        free(buffer2);
+        free(bufferCopy2);
         return EXIT_SUCCESS;
 }
