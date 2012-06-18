@@ -81,7 +81,7 @@ The following flow diagram shows the basic run-down of the debugger:
 		\path [line] (halt) -- node {yes}(stop);
 		\path [line] (breakpoint) -| node {no}(next);
 		\path [line] (CLI) -| node [above of=CLI, left] {Continue}(next);
-		\path [line] (CLI) -| node {Step}(step);
+		\path [line] (CLI) -| node {Next}(step);
 		\path [line] (step) |- (next);
 		\path [line] (breakpoint) -- node {yes}(CLI);
 		\path [line] (CLI) -| node [above of=CLI, left] {Quit}(stop);
@@ -110,9 +110,9 @@ and a short description of what the command does.
 	print & 5 & p & Print the contents of all registers \\ \hline
 	help & 6 & h & Print the descriptions in this table \\ \hline
 	setReg $<$regno$>$ $<$value$>$ & 7 & sR & Set the value of \$$<$regno$>$ to $<$value$>$ \\ \hline
-	setAddr $<$addr$>$ $<$value$>$ & 8 & sA & Set the value of mem[$<$regno$>$] to $<$value$>$ \\ \hline
+	setAddr $<$addr$>$ $<$value$>$ & 8 & sA & Set the value of mem[$<$addr$>$] to $<$value$>$ \\ \hline
 	printReg $<$regno$>$ & 7 & pR & Print the value of \$$<$regno$>$ \\ \hline
-	printAddr $<$addr$>$ & 8 & pA & Print the value of mem[$<$regno$>$] \\ \hline
+	printAddr $<$addr$>$ & 8 & pA & Print the value of mem[$<$addr$>$] \\ \hline
 	\end{tabular}
 	\end{center}
 \end{adjustwidth}
@@ -140,7 +140,7 @@ use case. The other two members have now taught the importance of version
 control, but admit that we were not doing it quite right. We had a shared 
 repository, on which we all had our own branches and pushed and pulled from, 
 and the master was holy, and only to be touched if we are sure. This is an 
-antiquated model of Subversion. We learnt were git really excels -  its 
+antiquated model of Subversion. We learnt where git really excels -  its 
 distributed model. If we each had our own repository, each with our master, 
 then we could branch of and do some experimental work on our own and merge it 
 into out master branch. If then the rest of the group members wanted by change, 
