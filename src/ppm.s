@@ -44,14 +44,14 @@ twoRows:     addi $4 $0 0     - $4 = 0
 whiteBlack:  addi $7 $0 0     - $7 = 0
 whiteLoop:   out $1           - Output 255 (3x this makes up a white pixel)
              addi $7 $7 1     - $7++
-             beq $7 $6 2
-             jmp whiteLoop
+             beq $7 $6 2      - Skip if 8 pixels outputted,
+             jmp whiteLoop    -   loop otherwise
              addi $7 $0 0     - $7 = 0
 
 blackLoop:   out $0           - Output 0 (3x this makes black pixel)
              addi $7 $7 1     - $7++
-             beq $7 $6 2
-             jmp blackLoop
+             beq $7 $6 2      - Skip if 8 pixels outputted,
+             jmp blackLoop    -   loop otherwise
              addi $4 $4 1     - $4++
              beq $4 $3 2      - Skip if row finished,
              jmp whiteBlack   -   otherwise loop
@@ -61,14 +61,14 @@ blackLoop:   out $0           - Output 0 (3x this makes black pixel)
 blackWhite:  addi $7 $0 0     - $7 = 0
 blackLoop2:  out $0           - Output 0 (3x this makes black pixel)
              addi $7 $7 1     - $7++
-             beq $7 $6 2
-             jmp blackLoop2
+             beq $7 $6 2      - Skip if 8 pixels outputted,
+             jmp blackLoop2   -   loop otherwise
              addi $7 $0 0     - $7 = 0
 
 whiteLoop2:  out $1           - Output 255 (3x this makes up a white pixel)
              addi $7 $7 1     - $7++
-             beq $7 $6 2
-             jmp whiteLoop2
+             beq $7 $6 2      - Skip if 8 pixels outputted,
+             jmp whiteLoop2   -   loop otherwise
              addi $4 $4 1     - $4++
 
              beq $4 $3 2      - Skip if row finished,
