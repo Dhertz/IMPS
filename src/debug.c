@@ -50,12 +50,12 @@ void addCommands(table *t) {
 void showHelp() {
      printf("IMPS Debugger commands:\n\n");
      printf("quit (q): Halt the execution and exit the program\n");
-	printf("break <line> (b <line>): Set a breakpoint at line <line>\n");
-	printf("run (r): Start running the program\n");
-	printf("continue (c): Continue execution to the next break point\n");
-	printf("print (p): Print the contents of all registers\n");
-	printf("help (h): Print this list of commands\n");
-	printf("setReg <regno> <value> (sR <regno> <value>): Set the value of $<regno> to <value>\n");
+     printf("break <line> (b <line>): Set a breakpoint at line <line>\n");
+     printf("run (r): Start running the program\n");
+     printf("continue (c): Continue execution to the next break point\n");
+     printf("print (p): Print the contents of all registers\n");
+     printf("help (h): Print this list of commands\n");
+     printf("setReg <regno> <value> (sR <regno> <value>): Set the value of $<regno> to <value>\n");
 	printf("setAddr <addr> <value> (sA <addr> <value>): Set the value of mem[<addr>] to <value>\n");
 	printf("printReg <regno> (pR <regno>): Print the value of $<regno>\n");
 	printf("printAddr <addr> (pA <addr>): Print the value of mem[<addr>]\n");
