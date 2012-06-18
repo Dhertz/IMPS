@@ -49,7 +49,16 @@ void addCommands(table *t) {
 
 void showHelp() {
     printf("IMPS Debugger commands:\n\n");
-    /* TODO: write these prints */
+    printf("quit (q): Halt the execution and exit the program\n");
+	printf("break <line> (b <line>): Set a breakpoint at line <line>\n");
+	printf("run (r): Start running the program\n");
+	printf("continue (c): Continue execution to the next break point\n");
+	printf("print (p): Print the contents of all registers\n");
+	printf("help (h): Print this list of commands\n");
+	printf("setReg <regno> <value> (sR <regno> <value>): Set the value of $<regno> to <value>\n");
+	printf("setAddr <addr> <value> (sA <addr> <value>): Set the value of mem[<addr>] to <value>\n");
+	printf("printReg <regno> (pR <regno>): Print the value of $<regno>\n");
+	printf("printAddr <addr> (pA <addr>): Print the value of mem[<addr>]\n");
 }
 
 static bool _isEmptyLine(int line, int emptylinenos[], int emptyLines) {
@@ -89,10 +98,6 @@ int main(int argc, char **argv) {
     fclose(in);
     printf("done.\n");
 
-    /* Create copies of buffer for use in second pass */
-    buffer2 = malloc(size * 4);
-    memcpy(buffer2, buffer, size);
-
     /* Detect empty lines, needed for human to assembly line number conversion in breakpoints */
     int emptylinenos[size];
     int emptylines = 0, curline = 0;
@@ -111,12 +116,21 @@ int main(int argc, char **argv) {
         buffer++;
     }
     buffer = origBuffer;
-     
+
+    /* Create copies of buffer for use in second pass */
+    buffer2 = malloc(size * 4);
+    memcpy(buffer2, buffer, size);
+	buffer2[strlen(buffer)] = '\0';
+	
+	printf("%s\n", buffer);
+	printf("%s\n", buffer2);
+	
     /* First pass - fill symbol table with labels -> offsets */
     printf("Building symbol table... ");
     table symbols;
     init(&symbols);
     int numLines = buildSymTable(&symbols, in, size, buffer);
+	
     free(buffer);
     printf("done.\n");
 
