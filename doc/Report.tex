@@ -1,19 +1,176 @@
-\documentclass[11pt]{article}
+\documentclass[11pt]{report}
+
+\usepackage[latin1]{inputenc}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows}
+\usepackage{chngpage}
 
 \begin{document}
+\setlength{\topmargin}{-1cm}
+\setlength{\parindent}{0in}
 
-\title{Extending The IMPS ... with ... }
-\author{TODO}
+\title{The IMPS Debugger}
+\author{An extension to the IMPS system\\written by Owen Davies, Daniel Hertz and Charlie Hothersall-Thomas}
+\date{ \today}
 
 \maketitle
+\section*{The IMPS Debugger}
 
-\section{Introduction}
+The IMPS debugger allows the user to debug an IMPS source file. It takes one 
+command line argument - the source file that the user wishes to debug. For 
+example, to debug the source file \textbf{example.s} one would need to write 
+the following command:
+\\[2ex]
+\texttt{\% ./debug example.s}
+\\[2ex]
+The debugger is a standalone tool, which shares methods from the IMPS emulator 
+and IMPS assembler. We created a seperate file, \textbf{utils.c}, which contains 
+shared methods for the emulator, assembler and our debugger.
 
-Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
-incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
-Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in
-culpa qui officia deserunt mollit anim id est laborum.
+\subsection*{Example Usage}
 
+Once the program is started, the input file is read and a symbol table is 
+constructed. The source file is then assembled into IMPS binary. The user is 
+then presented with a prompt:
+\\[2ex]
+\texttt{\% ./debug example.s\\
+		Reading input file example.s... done.\\
+		Building symbol table... done.\\
+		Welcome to the IMPS debugger. Type "h" or "help" for information on commands.}
+\\[2ex]
+From here the user can add breakpoints to halt execution at a certain line, set 
+the value of any of the 32 registers or any memory address, and start executing 
+the program with the \texttt{run} command. If no breakpoints are set, then the
+program will run through normally and exit, as if it had been assembled and
+emulated normally. If one or more breakpoints have been set, then the program
+will execute line by line until the first breakpoint is hit. Say the user set a
+breakpoint at line 8:
+\\[2ex]
+\texttt{Breakpoint at line 8 reached. What do you want to do?}
+\\[2ex]
+Now the program has reached a breakpoint, the user can move to the next line, 
+continue to the next breakpoint (or to the end of the program if there are no 
+more breakpoints), or print or set the values of registers and memory 
+addressses.
+
+\newpage
+
+The following flow diagram shows the basic run-down of the debugger:
+
+\begin{center}
+	% Define block styles
+	\tikzstyle{decision} = [diamond, draw, fill=white!20, 
+		text width=4.5em, text badly centered, node distance=3cm, inner sep=0pt]
+	\tikzstyle{block} = [rectangle, draw, fill=white!20, 
+		text width=5em, text centered, rounded corners, minimum height=4em]
+	\tikzstyle{line} = [draw, -latex']
+		
+	\begin{tikzpicture}[scale=0.40, node distance = 2cm, auto]
+		\node [block] (start) {Build symbol table and assemble};
+		\node [block, below of=start] (break) {Set breakpoints};
+		\node [block, below of=break] (execute) {Emulate line};
+		\node [decision, below of=execute] (halt) {Have we reached halt?};
+		\node [decision, below of=halt, node distance=4cm] (breakpoint) {Have we reached a breakpoint?};
+		\node [block, left of=halt, node distance=3cm] (next) {Next line};
+		\node [block, right of=halt, node distance=3.5cm, fill=red!20] (stop) {Stop Execution};
+		\node [decision, below of=breakpoint, node distance=4cm] (CLI) {Command Line Interface};
+		\node [block, left of=breakpoint, node distance=6cm] (step) {Set Break for next line};
+		%\node [block, right of=CLI, node distance=6cm] (print) {Print registers or Address};
+		\path [line] (start) -- (break);
+		\path [line] (break) -- (execute);
+		\path [line] (execute) -- (halt);
+		\path [line] (halt) -- node {no}(breakpoint);
+		\path [line] (next) |- (execute);
+		\path [line] (halt) -- node {yes}(stop);
+		\path [line] (breakpoint) -| node {no}(next);
+		\path [line] (CLI) -| node [above of=CLI, left] {Continue}(next);
+		\path [line] (CLI) -| node {Next}(step);
+		\path [line] (step) |- (next);
+		\path [line] (breakpoint) -- node {yes}(CLI);
+		\path [line] (CLI) -| node [above of=CLI, left] {Quit}(stop);
+		%\path [line] (CLI) -- node [near end] {Print}(print);
+		%\path [line] (print) |- (CLI.north);
+	\end{tikzpicture}
+\end{center}
+
+\subsection*{Table of Commands}
+
+The table below lists all the of commands available in the debugger and a short description of what each command does.\\
+
+\begin{adjustwidth}{-.5in}{-.5in} 
+	\begin{center} 
+	\begin{tabular}{ | l | c | p{5cm} |}
+	\hline
+	Command & Short & Description \\ \hline
+	quit & q & Halt the execution and exit the program \\ \hline
+	break $<$line$>$ & b $<$line$>$ & Set a breakpoint at line $<$line$>$ \\ \hline
+	run & r & Start running the program \\ \hline
+	next & n & Execute the next line of code \\ \hline
+	continue & c & Continue execution to the next break point \\ \hline
+	print & p & Print the program counter and contents of all registers \\ \hline
+	help & h & Print the list of supported debugger commands \\ \hline
+	setReg $<$regno$>$ $<$value$>$ & sR & Set the value of \$$<$regno$>$ to $<$value$>$ \\ \hline
+	setAddr $<$addr$>$ $<$value$>$ & sA & Set the value of mem[$<$addr$>$] to $<$value$>$ \\ \hline
+	printReg $<$regno$>$ & pR & Print the value of \$$<$regno$>$ \\ \hline
+	printAddr $<$addr$>$ & pA & Print the value of mem[$<$addr$>$] \\ \hline
+	\end{tabular}
+	\end{center}
+\end{adjustwidth}
+
+\subsection*{Testing}
+
+Testing of the debugger was ongoing throughout development, using carefully-written
+source files to cover every concievable edge case, whilst ensuring that the debugger
+always behaved as expected and that any outputted values were correct. The GNU
+Project Debugger, \textbf{gdb}, also proved useful during development. This allowed
+us to use the stack trace to quickly locate and correct problems as they were
+experienced, rather than having to search through our source code. We also used
+gdb's interface as inspiration when designing the CLI for our debugger.
+
+\newpage
+
+The primary problem encountered when writing the debugger was caused by empty
+lines in source files. These are discarded by the assembler, yet when the user
+inputs a line number to set a breakpoint, the empty lines in the original source
+file still need to be considered when determining where to set the breakpoint.
+Our solution to this was to scan through the source file looking for blank lines,
+generating a map (stored as an array) of assembly line numbers to 'human' line
+numbers.
+
+\section*{Programming in a Group}
+
+Group programming has been a fulfilling experience for us, as we have each
+improved our group work skills whilst also becoming more proficient in C. All
+three members of the group had no prior experience of collaborative programming,
+but it worked well and we each feel that our teamwork and communication skills
+are better as a result.
+\\[2ex]
+The work was divided roughly equally; we did our best to delegate each task to the team
+member who was most interested in completing it, but this was not always possible. It 
+was important that every one knew about progress made by the remainder of the group, so we
+consistently checked each other's work throughout the process, suggesting
+alterations and improvements where possible. We also tried to ensure that all large design
+issues were addressed as a group, to make sure that the most appropriate decision was
+made, including the file structure and algorithms used.
+\\[2ex]
+The group project was also a good exercise in version control, using git to make
+it easier to track and combine every one's work. We later realised that we
+weren't quite using git correctly, although we have learned for next time. We
+had a shared repository and each had our own branch, using the master branch
+only after discussing the commit with the entire group. This is an antiquated
+model of Subversion. git really excels with its distributed model - if we each
+had our own repository (with its own master branch) then we could branch out for
+some solo experimental work, merge into our individual master branch, and then
+if the rest of the group agreed with the work, it could be pulled into the others' repositories 
+and merged. This makes git much more powerful and easier to use, with nicer merges.
+
+\newpage
+
+To start with, we communicated primarily in person and worked individually, but
+we soon realised that this was not the most efficient way, as people were either
+being left out of the loop or with not enough work to do. We therefore decided to
+split up tasks into smaller chunks, and introduced pair-programming on the larger
+tasks while the other group member worked on something else. We found this new
+system to be much more efficient, with the bonus that everybody knew what the
+others were working on at any given time.
 \end{document}
